@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">UKMaApp</string>
+    <string name="title_activity_maps">UKMaApp</string>
+    <string name="maps_api_key">AIzaSyDcFhqWsu-uWaze1GYtb-v2lOaTk9jgRUU</string>
+
+</resources>
