@@ -4,5 +4,7 @@
     <string name="app_name">UKMaApp</string>
     <string name="title_activity_maps">UKMaApp</string>
     <string name="maps_api_key">AIzaSyDcFhqWsu-uWaze1GYtb-v2lOaTk9jgRUU</string>
+    <string name="str_btn_find">Search</string>
+    <string name="hnt_et_location">Enter location</string>
 
 </resources>
