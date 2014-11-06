@@ -3,8 +3,12 @@ package com.weebly.cs499fall14.ukmaapp;
 import java.io.IOException;
 import java.util.List;
 
+import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -16,13 +20,16 @@ import android.widget.EditText;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity {
+public class MapsActivity extends FragmentActivity implements LocationListener, LocationSource {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private LocationSource.OnLocationChangedListener mListener;
+    private LocationManager locationManager;
     MarkerOptions markerOptions;
     LatLng latLng;
 
@@ -30,6 +37,34 @@ public class MapsActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        //For ping location
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if(locationManager != null)
+        {
+            boolean gpsIsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            boolean networkIsEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            if(gpsIsEnabled)
+            {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000L, 10F, this);
+            }
+            else if(networkIsEnabled)
+            {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000L, 10F, this);
+            }
+            else
+            {
+                //Show an error dialog that GPS is disabled...
+            }
+        }
+        else
+        {
+            //Show some generic error dialog because something must have gone wrong with location manager.
+        }
+        //LocationListener locLister = new MyLocationLister();
+        //locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locLister);
+
         SupportMapFragment supportMapFragment = (SupportMapFragment)
         getSupportFragmentManager().findFragmentById(R.id.map);
         setUpMapIfNeeded();// Getting a reference to the map
@@ -57,11 +92,39 @@ public class MapsActivity extends FragmentActivity {
         btn_find.setOnClickListener(findClickListener);
 
     }
+
+    @Override
+    public void onPause()
+    {
+        if(locationManager != null)
+        {
+            locationManager.removeUpdates(this);
+        }
+
+        super.onPause();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        setUpMapIfNeeded();
+        if(locationManager != null)
+        {
+            mMap.setMyLocationEnabled(true);
+        }
+    }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         //getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
+    }
+
+    //sets 3D buildings on if "true"
+    public final void setBuildingsEnabled (){
     }
 
     // An AsyncTask class for accessing the GeoCoding Web Service
@@ -117,13 +180,6 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setUpMapIfNeeded();
-    }
-
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
@@ -149,6 +205,7 @@ public class MapsActivity extends FragmentActivity {
             if (mMap != null) {
                 setUpMap();
             }
+            mMap.setLocationSource(this);
         }
     }
 
@@ -159,7 +216,55 @@ public class MapsActivity extends FragmentActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
+        mMap.setMyLocationEnabled(true);
         //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(38.038024, -84.504686), 18));
+
+        //added for locator button
+        mMap.setMyLocationEnabled(true);
+    }
+    @Override
+    public void activate(OnLocationChangedListener listener)
+    {
+        mListener = listener;
+    }
+
+    @Override
+    public void deactivate()
+    {
+        mListener = null;
+    }
+
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        if( mListener != null )
+        {
+            mListener.onLocationChanged( location );
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+        }
+    }
+
+    @Override
+    public void onProviderDisabled(String provider)
+    {
+        // TODO Auto-generated method stub
+        Toast.makeText(this, "provider disabled", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onProviderEnabled(String provider)
+    {
+        // TODO Auto-generated method stub
+        Toast.makeText(this, "provider enabled", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras)
+    {
+        // TODO Auto-generated method stub
+        Toast.makeText(this, "status changed", Toast.LENGTH_SHORT).show();
     }
 }
+
