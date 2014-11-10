@@ -163,9 +163,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 // Creating an instance of GeoPoint, to display in Google Map
                 latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-                String addressText = String.format("%s, %s",
+                //This is the address they entered
+                /*String addressText = String.format("%s, %s",
                         address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
-                        address.getCountryName());
+                        address.getCountryName());*/
+
+                //Attempt to fix the NULL for not entering in country
+                //This takes care of the NULL Value, but it does not register the city/state/country
+                String addressText = String.format("%s, Lexington, KY, USA",
+                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "Lexington, KY, USA");
 
                 markerOptions = new MarkerOptions();
                 markerOptions.position(latLng);
@@ -173,7 +179,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                 mMap.addMarker(markerOptions);
 
-                // Locate the first location
+                // Locate the first location and centers
                 if(i==0)
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
             }
