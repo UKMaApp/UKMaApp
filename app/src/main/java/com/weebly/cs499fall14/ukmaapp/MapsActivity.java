@@ -55,7 +55,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             }
             else
             {
-                //Show an error dialog that GPS is disabled...
+                //Show some kind of message that tells the user that the GPS is disabled.
             }
         }
         else
