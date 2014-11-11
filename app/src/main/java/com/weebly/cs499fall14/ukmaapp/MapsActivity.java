@@ -90,7 +90,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         };
         // Setting button click event listener for the find button
         btn_find.setOnClickListener(findClickListener);
-
     }
 
     @Override
@@ -170,7 +169,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                 //Attempt to fix the NULL for not entering in country
                 //This takes care of the NULL Value, but it does not register the city/state/country
-                String addressText = String.format("%s, Lexington, KY, USA",
+                String addressText = String.format("%s, Lexington KY USA",
                         address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "Lexington, KY, USA");
 
                 markerOptions = new MarkerOptions();
