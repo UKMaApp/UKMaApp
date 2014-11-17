@@ -210,6 +210,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             if (mMap != null) {
                 setUpMap();
             }
+            //This sets the location ability 
             mMap.setLocationSource(this);
         }
     }

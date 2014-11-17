@@ -19,7 +19,6 @@
          See the License for the specific language governing permissions and
          limitations under the License.
     -->
-    <!-- This can go anywhere in your layout (see other demos for some examples). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"

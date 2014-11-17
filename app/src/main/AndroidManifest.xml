@@ -26,7 +26,7 @@
     </application>
 
 
-
+<!-- Permissions for the app -->
     <permission
         android:name="com.weebly.cs499fall14.ukmaapp.permission.MAPS_RECEIVE"
         android:protectionLevel="signature"/>
