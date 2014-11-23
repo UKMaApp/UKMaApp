@@ -95,69 +95,59 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         EditText etLocation = (EditText) findViewById(R.id.et_location);
 
         // Getting user input location
-        String location = etLocation.getText().toString();
+        String location = etLocation.getText().toString().toLowerCase();
+        Marker closestMarker = null;
 
-        if (location != null && !location.equals("")) {
-            new GeocoderTask().execute(location);
-        }
-    }
+        if (!location.equals(null) && !location.equals("")) {
+            int closestDistance = 1000;
+            for (Marker m : mMarkerArray) {
+                String markerName = mBuildingHash.get(m.getTitle()).name;
 
-    // An AsyncTask class for accessing the GeoCoding Web Service
-    private class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
-
-        @Override
-        protected List<Address> doInBackground(String... locationName) {
-            // Creating an instance of Geocoder class
-            Geocoder geocoder = new Geocoder(getBaseContext());
-            List<Address> addresses = null;
-
-            try {
-                // Getting a maximum of 3 Address that matches the input text
-                addresses = geocoder.getFromLocationName(locationName[0], 3);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return addresses;
-        }
-
-        @Override
-        protected void onPostExecute(List<Address> addresses) {
-            if (addresses==null || addresses.size()==0) {
-                Toast.makeText(getBaseContext(), "No Location found", Toast.LENGTH_SHORT).show();
-            }
-
-            // Clears all the existing markers on the map
-            mMap.clear();
-
-            // Adding Markers on Google Map for each matching address
-            for (int i=0; i<addresses.size(); i++) {
-                Address address = (Address) addresses.get(i);
-
-                // Creating an instance of GeoPoint, to display in Google Map
-                latLng = new LatLng(address.getLatitude(), address.getLongitude());
-
-                //This is the address they entered
-                /*String addressText = String.format("%s, %s",
-                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
-                        address.getCountryName());*/
-
-                //Attempt to fix the NULL for not entering in country
-                //This takes care of the NULL Value, but it does not register the city/state/country
-                String addressText = String.format("%s, Lexington KY USA",
-                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "Lexington, KY, USA");
-
-                markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title(addressText);
-
-                mMap.addMarker(markerOptions);
-
-                // Locate the first location and centers
-                if (i==0) {
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                if (location.equals(markerName.toLowerCase())) {
+                    closestMarker = m;
+                    break;
+                }
+                // Check actual name like "Ralph G. Anderson Building"
+                int thisDistance = levenshteinDistance(location, markerName);
+                if (thisDistance < closestDistance) {
+                    closestDistance = thisDistance;
+                    closestMarker = m;
+                }
+                // Check building code like "RGAN"
+                thisDistance = levenshteinDistance(location, mBuildingHash.get(markerName).code);
+                if (thisDistance < closestDistance) {
+                    closestDistance = thisDistance;
+                    closestMarker = m;
                 }
             }
         }
+        if (closestMarker != null) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(closestMarker.getPosition()));
+            closestMarker.showInfoWindow();
+        }
+    }
+
+    // Algorithm implementation from http://rosettacode.org/wiki/Levenshtein_distance#Java
+    // It finds the Levenshtein distance between two string (an int) and returns it
+    public static int levenshteinDistance(String a, String b) {
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+
+        int [] costs = new int [b.length() + 1];
+        for (int j=0; j<costs.length; j++) {
+            costs[j] = j;
+        }
+        for (int i=1; i<=a.length(); i++) {
+            costs[0] = i;
+            int nw = i - 1;
+
+            for (int j=1; j<=b.length(); j++) {
+                int cj = Math.min(1 + Math.min(costs[j], costs[j-1]), a.charAt(i-1) == b.charAt(j-1) ? nw : nw+1);
+                nw = costs[j];
+                costs[j] = cj;
+            }
+        }
+        return costs[b.length()];
     }
 
     public class Building {
@@ -328,14 +318,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-        // Add Ground Overlay
+        /*// Add Ground Overlay
         GroundOverlayOptions campusMap = new GroundOverlayOptions()
                 .image(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
                 .position(new LatLng(38.038024, -84.504686), 8600f, 6500f);
         mMap.addGroundOverlay(campusMap);
 
         // Change to Satellite to get rid of labels
-        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);*/
 
         // Added for locator button
         mMap.setMyLocationEnabled(true);
