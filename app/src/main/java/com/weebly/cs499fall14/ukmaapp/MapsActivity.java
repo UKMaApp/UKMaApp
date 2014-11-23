@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -49,7 +50,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private LocationSource.OnLocationChangedListener mListener;
     private LocationManager locationManager;
-    HashMap<String, Building> buildingHash = new HashMap<String, Building>();
+    private HashMap<String, Building> mBuildingHash = new HashMap<String, Building>();
+    private ArrayList<Marker> mMarkerArray = new ArrayList<Marker>();
     MarkerOptions markerOptions;
     LatLng latLng;
 
@@ -61,6 +63,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         setUpMapIfNeeded();
         //setUpGroundOverlay();
         setUpMarkers();
+    }
+
+    public void changeMarkers(View view) {
+        for (Marker m : mMarkerArray) {
+            m.setAlpha(1.0f - m.getAlpha()); // toggle transparency
+        }
     }
 
     private void setUpGroundOverlay() {
@@ -173,7 +181,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 default: break;
             }
             if (!name.equals("Error")) {
-                buildingHash.put(name, this);
+                mBuildingHash.put(name, this);
             }
         }
     }
@@ -195,12 +203,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                 // Create a marker for the current Building and add it to the map
                 if (!bldg.name.equals("Error")) {
-                    mMap.addMarker(new MarkerOptions()
+                    Marker mMarker = mMap.addMarker(new MarkerOptions()
                             .position(new LatLng(bldg.lat, bldg.lng))
                             .title(bldg.name) // this is what we search clicked markers by so beware
                             .alpha(1.0f) // 0.0 (invisible) - 1.0 (fully visible)
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)) // make pin blue
                             .snippet(bldg.code + " Hours: 8-5")); // We will just add a new column for hours of operation
+                    mMarkerArray.add(mMarker); // This is so we can loop through markers later
                 }
                 mLine = reader.readLine(); // increment line
             }
@@ -220,7 +229,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             @Override
             public void onInfoWindowClick(Marker marker) {
                 // Search hash by marker title (which is a name) then take the object's url
-                String url = buildingHash.get(marker.getTitle()).url;
+                String url = mBuildingHash.get(marker.getTitle()).url;
 
                 if (url != null) {
                     Intent openUrl = new Intent(Intent.ACTION_VIEW, Uri.parse(url));

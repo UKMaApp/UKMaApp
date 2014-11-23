@@ -29,13 +29,23 @@ android:orientation="vertical">
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:background="@android:color/transparent" >
 
         <Button
             android:id="@+id/btn_find"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/str_btn_find"
+            android:layout_alignParentRight="true" />
+
+        <Button
+            android:id="@+id/button_change_markers"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/change_markers"
+            android:onClick="changeMarkers"
+            android:layout_below="@id/btn_find"
             android:layout_alignParentRight="true" />
 
         <EditText
