@@ -61,26 +61,45 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         setContentView(R.layout.activity_maps);
 
         setUpMapIfNeeded();
-        //setUpGroundOverlay();
         setUpMarkers();
     }
 
-    public void changeMarkers(View view) {
+    @Override
+    public void onPause() {
+        if (locationManager != null) {
+            locationManager.removeUpdates(this);
+        }
+
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setUpMapIfNeeded();
+        if (locationManager != null) {
+            mMap.setMyLocationEnabled(true);
+        }
+    }
+
+    // Change markers button listener
+    public void changeMarkersListener(View view) {
         for (Marker m : mMarkerArray) {
             m.setAlpha(1.0f - m.getAlpha()); // toggle transparency
         }
     }
 
-    private void setUpGroundOverlay() {
-        /* //Currently broken*
-        int resId = this.getResources().getIdentifier("overlay_bmp.bmp", "drawable", this.getPackageName());
+    // Search button listener
+    public void searchListener(View view) {
+        // Getting reference to EditText to get the user input location
+        EditText etLocation = (EditText) findViewById(R.id.et_location);
 
-        LatLngBounds campusBounds = new LatLngBounds(
-                new LatLng(38.0444, -84.4949),       // South west corner
-                new LatLng(38.0094, -84.5173));      // North east corner
-        GroundOverlay campusMap = mMap.addGroundOverlay(new GroundOverlayOptions()
-                .image(BitmapDescriptorFactory.fromResource(R.drawable.overlay_png))
-                .positionFromBounds(campusBounds));/**/
+        // Getting user input location
+        String location = etLocation.getText().toString();
+
+        if (location != null && !location.equals("")) {
+            new GeocoderTask().execute(location);
+        }
     }
 
     // An AsyncTask class for accessing the GeoCoding Web Service
@@ -248,33 +267,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         return true;
     }
 
-    @Override
-    public void onPause() {
-        if (locationManager != null) {
-            locationManager.removeUpdates(this);
-        }
-
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        setUpMapIfNeeded();
-        if (locationManager != null) {
-            mMap.setMyLocationEnabled(true);
-        }
-    }
-
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
      * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p>
+     *
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
      * install/update the Google Play services APK on their device.
-     * <p>
+     *
      * A user can return to this FragmentActivity after following the prompt and correctly
      * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
      * have been completely destroyed during this process (it is likely that it would only be
@@ -285,8 +286,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
                 setUpMap();
@@ -296,16 +296,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     }
 
     /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p>
+     * This is where we can add markers or lines, add listeners or move the camera.
+     *
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(38.038024, -84.504686), 18));
-
-        //For ping location
+        // For ping location
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locationManager != null) {
             boolean gpsIsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -324,32 +320,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         //LocationListener locLister = new MyLocationLister();
         //locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locLister);
 
-        SupportMapFragment supportMapFragment = (SupportMapFragment)
-                getSupportFragmentManager().findFragmentById(R.id.map);
-        setUpMapIfNeeded();// Getting a reference to the map
-        mMap = supportMapFragment.getMap();
-
-        // Getting reference to btn_find of the layout activity_main
-        Button btn_find = (Button) findViewById(R.id.btn_find);
-
-        // Defining button click event listener for the find button
-        OnClickListener findClickListener = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Getting reference to EditText to get the user input location
-                EditText etLocation = (EditText) findViewById(R.id.et_location);
-
-                // Getting user input location
-                String location = etLocation.getText().toString();
-
-                if (location!=null && !location.equals("")) {
-                    new GeocoderTask().execute(location);
-                }
-            }
-        };
-        // Setting button click event listener for the find button
-        btn_find.setOnClickListener(findClickListener);
-
         // Set zoom and tilt
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(38.038024, -84.504686))
@@ -358,7 +328,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-        //added for locator button
+        // Add Ground Overlay
+        GroundOverlayOptions campusMap = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
+                .position(new LatLng(38.038024, -84.504686), 8600f, 6500f);
+        mMap.addGroundOverlay(campusMap);
+
+        // Change to Satellite to get rid of labels
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+
+        // Added for locator button
         mMap.setMyLocationEnabled(true);
     }
     @Override

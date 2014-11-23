@@ -23,8 +23,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-android:layout_height="fill_parent"
-android:orientation="vertical">
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -37,6 +37,7 @@ android:orientation="vertical">
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/str_btn_find"
+            android:onClick="searchListener"
             android:layout_alignParentRight="true" />
 
         <Button
@@ -44,7 +45,7 @@ android:orientation="vertical">
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:text="@string/change_markers"
-            android:onClick="changeMarkers"
+            android:onClick="changeMarkersListener"
             android:layout_below="@id/btn_find"
             android:layout_alignParentRight="true" />
 
