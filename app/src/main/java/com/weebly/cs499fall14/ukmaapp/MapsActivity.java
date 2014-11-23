@@ -6,6 +6,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
 import android.content.Context;
 import android.content.Intent;
@@ -46,6 +49,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private LocationSource.OnLocationChangedListener mListener;
     private LocationManager locationManager;
+    HashMap<String, Building> buildingHash = new HashMap<String, Building>();
     MarkerOptions markerOptions;
     LatLng latLng;
 
@@ -129,38 +133,76 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
+    public class Building {
+        public String name;
+        public String code;
+        public double lat;
+        public double lng;
+        public String url;
+
+        /* Constuctors are cool. This one will fill the fields based on the
+           incoming array "tokens" which represents a row from the table where
+           each index is a column. example
+           tokens[x] = {White Hall, CB, 38.038079, -84.503844, http://www.whitehall.com/}
+
+         * Once the fields are filled the Building is hashed by its name so it can be
+           searched for later like this: buildingHash.get("White Hall")
+
+         * NOTE: It will only hash the object if lat and lng are given and numeric */
+        Building(String[] tokens) {
+            name = "Error";
+            switch (tokens.length) {
+                case 1: break;
+                case 2: break;
+                case 3: break;
+                case 4: if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
+                            name = tokens[0];
+                            code = tokens[1];
+                            lat = Double.parseDouble(tokens[2]);
+                            lng = Double.parseDouble(tokens[3]);
+                        }
+                        break;
+                case 5: if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
+                            name = tokens[0];
+                            code = tokens[1];
+                            lat = Double.parseDouble(tokens[2]);
+                            lng = Double.parseDouble(tokens[3]);
+                            url = tokens[4];
+                        }
+                        break;
+                default: break;
+            }
+            if (!name.equals("Error")) {
+                buildingHash.put(name, this);
+            }
+        }
+    }
+
     private void setUpMarkers() {
         BufferedReader reader = null;
         try {
             // Open the .csv (comma separated value) file
             reader = new BufferedReader(new InputStreamReader(getAssets().open("Buildings.csv")));
-            String mLine = reader.readLine(); // read first line
 
+            String mLine = reader.readLine(); // read first line
             while (mLine != null) {
-                // Split lines (by commas) into tokens
-                // Example format
+                // Split lines (by commas) into tokens, example
                 // tokens[x] = {White Hall,CB,38.038079,-84.503844,http://www.whitehall.com/}
                 String[] tokens = mLine.split(",");
 
-                if (tokens.length >= 4) {
-                    if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
-                        String titleAndBldgCode = tokens[0]; // Defaults to building name
+                // The constructor fills up the Building and hashes it by its name
+                Building bldg = new Building(tokens);
 
-                        // If a building code (e.g. RGAN) is found it appends it in a parenthetical
-                        if (!tokens[1].equals("")) {
-                            titleAndBldgCode = tokens[0] + " (" + tokens[1] + ")";
-                        }
-
-                        // add the marker to the map
-                        mMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(Double.parseDouble(tokens[2]), Double.parseDouble(tokens[3])))
-                                .title(titleAndBldgCode)
-                                .alpha(1.0f) // 0.0 (invisible) - 1.0 (fully visible)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)) // make pin blue
-                                .snippet("http://www.google.com/")); // make sure it's a website
-                    }
+                // Create a marker for the current Building and add it to the map
+                if (!bldg.name.equals("Error")) {
+                    mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(bldg.lat, bldg.lng))
+                            .title(bldg.name) // this is what we search clicked markers by so beware
+                            .alpha(1.0f) // 0.0 (invisible) - 1.0 (fully visible)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)) // make pin blue
+                            .snippet(bldg.code + " Hours: 8-5")); // We will just add a new column for hours of operation
                 }
-                mLine = reader.readLine(); // line increment
+                mLine = reader.readLine(); // increment line
             }
         } catch (IOException e) {
             //error opening file probably
@@ -177,7 +219,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                String url = marker.getSnippet();
+                // Search hash by marker title (which is a name) then take the object's url
+                String url = buildingHash.get(marker.getTitle()).url;
 
                 if (url != null) {
                     Intent openUrl = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
