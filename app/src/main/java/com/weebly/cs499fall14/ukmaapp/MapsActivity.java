@@ -1,9 +1,16 @@
 package com.weebly.cs499fall14.ukmaapp;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -11,6 +18,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -18,6 +26,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -47,7 +56,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         setUpMapIfNeeded();
         //setUpGroundOverlay();
-        setUpInfoWindows();
+        setUpMarkers();
     }
 
     private void setUpGroundOverlay() {
@@ -120,20 +129,50 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
-    private void setUpInfoWindows() {
-        Marker naturalScience = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(38.038021, -84.504692))
-                .title("Natural Science Building")
-                .alpha(0.0f) // 0.0 (invisible) - 1.0 (fully visible)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                .snippet("http://www.google.com"));
-        naturalScience.showInfoWindow();
+    private void setUpMarkers() {
+        BufferedReader reader = null;
+        try {
+            // Open the .csv (comma separated value) file
+            reader = new BufferedReader(new InputStreamReader(getAssets().open("Buildings.csv")));
+            String mLine = reader.readLine(); // read first line
 
-        Marker POT = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(38.038681, -84.504191))
-                .title("Patterson Office Tower")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-        POT.showInfoWindow();
+            while (mLine != null) {
+                // Split lines (by commas) into tokens
+                // Example format
+                // tokens[x] = {White Hall,CB,38.038079,-84.503844,http://www.whitehall.com/}
+                String[] tokens = mLine.split(",");
+
+                if (tokens.length >= 4) {
+                    if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
+                        String titleAndBldgCode = tokens[0]; // Defaults to building name
+
+                        // If a building code (e.g. RGAN) is found it appends it in a parenthetical
+                        if (!tokens[1].equals("")) {
+                            titleAndBldgCode = tokens[0] + " (" + tokens[1] + ")";
+                        }
+
+                        // add the marker to the map
+                        mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(Double.parseDouble(tokens[2]), Double.parseDouble(tokens[3])))
+                                .title(titleAndBldgCode)
+                                .alpha(1.0f) // 0.0 (invisible) - 1.0 (fully visible)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)) // make pin blue
+                                .snippet("http://www.google.com/")); // make sure it's a website
+                    }
+                }
+                mLine = reader.readLine(); // line increment
+            }
+        } catch (IOException e) {
+            //error opening file probably
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    //error closing file probably
+                }
+            }
+        }
 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
@@ -146,6 +185,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 }
             }
         });
+    }
+
+    public static boolean isNumeric(String str) {
+        try {
+            double d = Double.parseDouble(str);
+        } catch(NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     @Override
