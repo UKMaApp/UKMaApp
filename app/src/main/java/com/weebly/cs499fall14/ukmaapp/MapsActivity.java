@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
@@ -76,6 +77,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     // Search button listener
     public void searchListener(View view) {
+        // Close keyboard
+        InputMethodManager inputManager = (InputMethodManager)
+                getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null :
+                getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
         // Getting reference to EditText to get the user input location
         EditText etLocation = (EditText) findViewById(R.id.et_location);
 

@@ -24,13 +24,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical">
+    android:orientation="vertical" >
 
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@android:color/transparent" >
+        android:background="@android:color/black" >
 
         <Button
             android:id="@+id/btn_find"
@@ -38,7 +38,8 @@
             android:layout_height="wrap_content"
             android:text="@string/str_btn_find"
             android:onClick="searchListener"
-            android:layout_alignParentRight="true" />
+            android:layout_alignParentRight="true"
+            android:textColor="@android:color/white" />
 
         <Button
             android:id="@+id/button_change_markers"
@@ -47,7 +48,8 @@
             android:text="@string/change_markers"
             android:onClick="changeMarkersListener"
             android:layout_below="@id/btn_find"
-            android:layout_alignParentRight="true" />
+            android:layout_alignParentRight="true"
+            android:textColor="@android:color/white" />
 
         <EditText
             android:id="@+id/et_location"
@@ -55,7 +57,12 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             android:hint="@string/hnt_et_location"
-            android:layout_toLeftOf="@id/btn_find" />
+            android:layout_toLeftOf="@id/btn_find"
+            android:paddingTop="18dp"
+            android:textColorHint="#ffafafaf"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            android:textCursorDrawable="@null" />
 
     </RelativeLayout>
 
