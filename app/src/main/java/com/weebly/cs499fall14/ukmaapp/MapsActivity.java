@@ -221,7 +221,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             .position(new LatLng(bldg.lat, bldg.lng))
                             .title(bldg.name) // this is what we search clicked markers by so beware
                             .alpha(1.0f) // 0.0 (invisible) - 1.0 (fully visible)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)) // make pin blue
                             .snippet(bldg.code + " Hours: 8-5")); // We will just add a new column for hours of operation
                     mMarkerArray.add(mMarker); // This is so we can loop through markers later
                 }
