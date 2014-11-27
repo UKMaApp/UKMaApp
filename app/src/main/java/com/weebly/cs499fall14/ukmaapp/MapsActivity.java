@@ -37,6 +37,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private LocationManager locationManager;
     private HashMap<String, Building> mBuildingHash = new HashMap<String, Building>();
     private ArrayList<Marker> mMarkerArray = new ArrayList<Marker>();
+    private static final int HUGE_STR_DIST = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,30 +92,62 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         Marker closestMarker = null;
 
         if (!location.equals("")) {
-            int closestDistance = 1000;
+            // Initial closest is 1000 since that is huge and all other "distances" will be closer.
+            int closestStrDistance = HUGE_STR_DIST;
+
+            // Loop through all markers. For each marker several comparisons are done to find
+            // the closest string match.
+            // 1. An exact match check is done and if it is found the rest of the markers
+            //    are skipped over.
+            // 2. Then a check against the building code (e.g. RGAN)
+            // 3. Then a check against the entire building name (e.g. Ralph G. Anderson Building)
+            // 4. Then a check against each word in the building name. This is done so a search
+            //    for "physics" when compared to the words {"chemistry", "physics", "building"}
+            //    will match correctly
+            // 5. Then a check against just a substring of the entire building name equal to
+            //    the length of the searched text (e.g. compare "ralph" to "ralph" of full name
+            //    "ralph g. anderson")
             for (Marker m : mMarkerArray) {
-                String markerName = mBuildingHash.get(m.getTitle()).name;
+                String markerName = mBuildingHash.get(m.getTitle()).name; // retrieve current marker name
                 m.setAlpha(0.0f); // make all markers transparent
 
+                // If exact name match
                 if (location.equals(markerName.toLowerCase())) {
                     closestMarker = m;
                     break;
                 }
 
                 // Check building code like "RGAN"
-                int thisDistance = levenshteinDistance(location, mBuildingHash.get(markerName).code);
-                if (thisDistance < closestDistance) {
-                    closestDistance = thisDistance;
+                int thisStrDistance = levenshteinDistance(location, mBuildingHash.get(markerName).code);
+                if (thisStrDistance < closestStrDistance) { // if this is a closer match than current closest then...
+                    closestStrDistance = thisStrDistance; // it is now the closest match
                     closestMarker = m;
                 }
 
-                // Check actual name like "Ralph G. Anderson Building"
+                // Check entire name like "Ralph G. Anderson Building"
+                thisStrDistance = levenshteinDistance(location, mBuildingHash.get(markerName).name);
+                if (thisStrDistance < closestStrDistance) { // if this is a closer match than current closest
+                    closestStrDistance = thisStrDistance; // it is now the closest match
+                    closestMarker = m;
+                }
+
+                // Split each building name by spaces
+                // Compare "physics" to {"chemistry", "physics", "building"}
+                String[] bldgSplitArray = mBuildingHash.get(markerName).name.split(" |-");
+                for (String bldgWord : bldgSplitArray) { // check each word
+                    thisStrDistance = levenshteinDistance(location, bldgWord);
+                    if (thisStrDistance < closestStrDistance) {
+                        closestStrDistance = thisStrDistance;
+                        closestMarker = m;
+                    }
+                }
+
                 // Substring because you want to compare "Ralph" to "Ralph" instead of
-                //   "Ralph" to "Ralph G. Anderson" with the Levenshtein algorithm
+                //   "Ralph" to "Ralph G. Anderson"
                 String subMarkerName = markerName.substring(0, Math.min(markerName.length(), location.length()));
-                thisDistance = levenshteinDistance(location, subMarkerName);
-                if (thisDistance < closestDistance) {
-                    closestDistance = thisDistance;
+                thisStrDistance = levenshteinDistance(location, subMarkerName);
+                if (thisStrDistance < closestStrDistance) {
+                    closestStrDistance = thisStrDistance;
                     closestMarker = m;
                 }
             }
