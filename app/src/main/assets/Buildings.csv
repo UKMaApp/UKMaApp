@@ -44,7 +44,7 @@ Breckinridge Hall,BREC,38.03507,-84.505218,http://ukcc.uky.edu/cgi-bin/dynamo?ma
 Business and Economics Building,BE,38.03779,-84.506445,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0034
 Career Center,JWST,38.037145,-84.500219,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0494
 Carol Martin Gatton Business and Economics Building,BE,38.03779,-84.506445,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0034
-Catholic Newman Center,,38.035865,-84.500431,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+A002
+Catholic Newman Center,Newman,38.035865,-84.500431,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+A002
 Center for Robotics and Manufacturing Systems,RMB,38.037004,-84.505563,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0108
 Student Center - Center Theater,SC,38.040189,-84.50363,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0030
 Charles E. Barnhart Building,CEBA,38.026778,-84.50963,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0276
@@ -175,7 +175,6 @@ Raymond Barnhart Gallery,,38.042048,-84.508824,http://ukcc.uky.edu/cgi-bin/dynam
 Raymond F. Betts House,GCH2,38.04055,-84.49856,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0344
 Recital Hall,SCFA,38.037758,-84.501121,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0241
 Regulatory Services,,38.020715,-84.50949,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0275
-Research Building 3,,38.08772,-84.491493,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0216
 Research Facility 1,,38.035566,-84.507021,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0003
 Richards House,,38.036697,-84.508721,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0400
 Robert Straus Behavioral Research Building,,38.030281,-84.498397,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0506
@@ -243,3 +242,59 @@ William E. and Casiana Schmidt Vocal Arts Center,,38.036913,-84.500547,http://uk
 William R. Willard Medical Education Building,MN,38.03101,-84.506682,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0298
 Worsham Theater,SCA,38.039451,-84.502727,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0026
 Young Library,WTYL,38.03285,-84.501738,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0456
+Willy T.,WTYL,38.03285,-84.501738,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0456
+Central Hall I,,38.032461,-84.503257,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0080
+Central Hall II,,38.031917,-84.504027,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0079
+Champions Court I,,38.040175,-84.501682,
+Champions Court II,,38.040693,-84.50091,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0123
+Chi Omega House,,38.036196,-84.501434,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0067
+Commonwealth Village 1,,38.026419,-84.513313,
+Commonwealth Village 2,,38.025747,-84.511961,
+Alpha Delta Pi House,,38.035592,-84.502248,
+Alpha Gamma Delta House,,38.035552,-84.50088,
+Alpha Tau Omega House,,38.034937,-84.500746,
+Greg Page Apartments,,38.018259,-84.507014,
+Greg Page Food Storage and Laundry,,38.017023,-84.508537,
+Dale E. Baldwin Residence Hall,BAHA,38.029041,-84.50058,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0566
+Dickey Hall,DH,38.040779,-84.508092,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0017
+Garrigus Building,GARR,38.028014,-84.508773,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0215
+Ingels Hall,INHA,38.028464,-84.501139,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0567
+John T. Smith Residence Hall,SMHA,38.030258,-84.500763,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0007
+Margaret Ingels Residence Hall,INHA,38.028464,-84.501139,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0567
+Miller Hall,MH,38.038029,-84.5047,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0035
+Old Engineers Residence,ER,38.037125,-84.501197,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0021
+Patterson Hall,PAHA,38.041524,-84.502122,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0009
+Smith Hall,SMHA,38.030258,-84.500763,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0565
+Pi Beta Phi House,,38.034166,-84.50062,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+X123
+Phi Sigma Kappa House,,38.03523,-84.50106,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0138
+Roselle Hall,,38.040758,-84.502283,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0568
+Blanding Dormitory I,,38.029993,-84.502973,
+Blanding Dormitory II,,38.030041,-84.503531,
+Blanding Dormitory III,,38.029592,-84.503585,
+Blanding Dormitory IV,,38.02916,-84.503129,
+Blanding Dormitory Tower,,38.02959,-84.503016,
+Blazer Hall,,38.041,-84.501907,
+Caney Cottage - Alice Lloyd College,,38.034773,-84.499133,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+A005
+Delta Delta Delta House,,38.0359,-84.501909,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0068
+Delta Gamma House,,38.034416,-84.500852,
+Delta Sigma Phi House,,38.035628,-84.501461,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0129
+Delta Zeta House,,38.035338,-84.501877,
+Farmhouse Fraternity,,38.034441,-84.498677,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0142
+Kappa Alpha Theta House,,38.035208,-84.501543,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0125
+Kappa Delta House,,38.035771,-84.501127,
+Keeneland Hall,,38.041781,-84.501659,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0011
+Kirwan Dormitory I,,38.02998,-84.501671,
+Kirwan Dormitory II,,38.029975,-84.501258,
+Kirwan Dormitory III,,38.029467,-84.501191,
+Kirwan Dormitory IV,,38.029041,-84.501875,
+Kirwan Dormitory Tower,,38.029534,-84.501773,
+New Haggin Field Dorm I,,38.032798,-84.503999,
+New Haggin Field Dorm II,,38.032415,-84.504538,
+New North Dorm I,,38.041521,-84.503256,
+New North Dorm II,,38.04184,-84.502741,
+Sigma Nu House,,38.03514,-84.49939,
+Sigma Alpha Epsilon House,,38.035467,-84.49976,
+Sigma Chi House,,38.03469,-84.501139,
+Shawneetown Building,,38.019672,-84.510259,
+University Lofts,,38.042618,-84.5066,http://ukcc.uky.edu/cgi-bin/dynamo?maps.391+campus+0090
+Woodland Glen Dormitory,,38.030967,-84.500393,
