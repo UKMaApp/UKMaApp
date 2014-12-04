@@ -106,7 +106,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         .zoom(position.zoom)
                         .tilt(position.tilt)
                         .build();
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(updatedPosition));
+                //only animate camera if update needed, reduces camera lag for unnecessary updates
+                if (position.target.longitude != updatedLng || position.target.latitude != updatedLat) {
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(updatedPosition));
+                }
             }
         };
     }
@@ -300,7 +303,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     // This parses the Buildings.csv file and populates the map with markers for buildings.
     private void setUpMarkers() {
-        Toast.makeText(this, "Search \"all\" to show/hide all buildinga or \"reset\" to re-center your camera", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Search \"all\" to show/hide all buildings or \"reset\" to re-center your camera", Toast.LENGTH_LONG).show();
         BufferedReader reader = null;
         try {
             // Open the .csv (comma separated value) file
