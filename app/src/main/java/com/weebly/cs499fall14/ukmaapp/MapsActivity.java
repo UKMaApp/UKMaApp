@@ -15,7 +15,6 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
-import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -38,6 +37,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private HashMap<String, Building> mBuildingHash = new HashMap<String, Building>();
     private ArrayList<Marker> mMarkerArray = new ArrayList<Marker>();
     private static final int HUGE_STR_DIST = 1000;
+    private static final double TOP_LAT_BOUND    =  38.046;
+    private static final double BOTTOM_LAT_BOUND =  38.000;
+    private static final double LEFT_LNG_BOUND   = -84.515;
+    private static final double RIGHT_LNG_BOUND  = -84.495;
+    private static final double DEFAULT_LAT = 38.038024;
+    private static final double DEFAULT_LNG = -84.504686;
+    private static final int DEFAULT_ZOOM = 18;
+    private static final int DEFAULT_TILT = 30;
+    private static final float INVISIBLE = 0.0f;
+    private static final float VISIBLE = 1.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,24 +74,49 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
-    // Change markers button listener
-    public void changeMarkersListener(View view) {
-        float toggle = 1.0f;
-        if (mMarkerArray.get(0).getAlpha() != 0.0f) {
-            toggle = 0.0f;
-        }
-        for (Marker m : mMarkerArray) {
-            m.setAlpha(toggle); // toggle transparency
-        }
+    // This function listens to the LatLng position the camera is centered on. If this goes out
+    // of bounds in any direction(s) it snaps back to the bound so you can't scroll too far
+    // away from UK's campus. Essentially this is confining your view to a box around UK's campus
+    // This is called every time the camera moves (or zooms or changes in any way).
+    public GoogleMap.OnCameraChangeListener getCameraChangeListener() {
+        return new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition position) {
+                // This is the latitude and longitude the camera is centered on.
+                double updatedLat = position.target.latitude;
+                double updatedLng = position.target.longitude;
+
+                // Check to make sure you are within the rectangular bounds
+                if (position.target.latitude > TOP_LAT_BOUND) {
+                    updatedLat = TOP_LAT_BOUND;
+                }
+                if (position.target.latitude < BOTTOM_LAT_BOUND) {
+                    updatedLat = BOTTOM_LAT_BOUND;
+                }
+                if (position.target.longitude < LEFT_LNG_BOUND) {
+                    updatedLng = LEFT_LNG_BOUND;
+                }
+                if (position.target.longitude > RIGHT_LNG_BOUND) {
+                    updatedLng = RIGHT_LNG_BOUND;
+                }
+
+                // Set zoom and tilt
+                CameraPosition updatedPosition = new CameraPosition.Builder()
+                        .target(new LatLng(updatedLat, updatedLng))
+                        .zoom(position.zoom)
+                        .tilt(position.tilt)
+                        .build();
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(updatedPosition));
+            }
+        };
     }
 
-    // Search button listener
+    // Search button listener. When the search button is clicked this is called. If there is
+    // text in the search box it will be searched for and the found building will be centered on.
     public void searchListener(View view) {
         // Close keyboard
-        InputMethodManager inputManager = (InputMethodManager)
-                getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null :
-                getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
         // Getting reference to EditText to get the user input location
         EditText etLocation = (EditText) findViewById(R.id.et_location);
@@ -91,7 +125,24 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         String location = etLocation.getText().toString().toLowerCase();
         Marker closestMarker = null;
 
-        if (!location.equals("")) {
+        if (location.equals("all")) {
+            // if "all" is searched the transparency of all markers is toggled
+            float toggle = VISIBLE;
+            if (mMarkerArray.get(0).getAlpha() != INVISIBLE) {
+                toggle = INVISIBLE;
+            }
+            for (Marker m : mMarkerArray) {
+                m.setAlpha(toggle); // toggle transparency of all markers
+            }
+        } else if (location.equals("reset")) {
+            // if "reset" is searched center map to default
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(DEFAULT_LAT, DEFAULT_LNG))
+                    .zoom(DEFAULT_ZOOM)
+                    .tilt(DEFAULT_TILT)
+                    .build();
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        } else if (!location.equals("")) {
             // Initial closest is 1000 since that is huge and all other "distances" will be closer.
             int closestStrDistance = HUGE_STR_DIST;
 
@@ -109,7 +160,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             //    "ralph g. anderson")
             for (Marker m : mMarkerArray) {
                 String markerName = mBuildingHash.get(m.getTitle()).name; // retrieve current marker name
-                m.setAlpha(0.0f); // make all markers transparent
+                m.setAlpha(INVISIBLE); // make all markers transparent
 
                 // If exact name match
                 if (location.equals(markerName.toLowerCase())) {
@@ -153,9 +204,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             }
         }
         if (closestMarker != null) {
+            // center on the closest matching marker and show its info window
             mMap.animateCamera(CameraUpdateFactory.newLatLng(closestMarker.getPosition()));
             closestMarker.showInfoWindow();
-            closestMarker.setAlpha(1.0f); // Make matched marker full visible
         }
     }
 
@@ -183,13 +234,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     }
 
     public class Building {
-        public String name;
-        public String code;
-        public double lat;
-        public double lng;
-        public String url;
+        public String name = "";
+        public String code = "";
+        public double lat = 0.0;
+        public double lng = 0.0;
+        public String url = "";
+        public String lotType = "";
+        public String hours = "";
 
-        /* Constuctors are cool. This one will fill the fields based on the
+        /* This constructor will fill the fields based on the
            incoming array "tokens" which represents a row from the table where
            each index is a column. example
            tokens[x] = {White Hall, CB, 38.038079, -84.503844, http://www.whitehall.com/}
@@ -224,6 +277,18 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         url = tokens[4];
                     }
                     break;
+                case 6:
+                    break;
+                case 7:
+                    if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
+                        name = tokens[0];
+                        code = tokens[1];
+                        lat = Double.parseDouble(tokens[2]);
+                        lng = Double.parseDouble(tokens[3]);
+                        url = tokens[4];
+                        lotType = tokens[5];
+                        hours = tokens[6];
+                    }
                 default:
                     break;
             }
@@ -233,7 +298,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
+    // This parses the Buildings.csv file and populates the map with markers for buildings.
     private void setUpMarkers() {
+        Toast.makeText(this, "Search \"all\" to show/hide all buildinga or \"reset\" to re-center your camera", Toast.LENGTH_LONG).show();
         BufferedReader reader = null;
         try {
             // Open the .csv (comma separated value) file
@@ -253,8 +320,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     Marker mMarker = mMap.addMarker(new MarkerOptions()
                             .position(new LatLng(bldg.lat, bldg.lng))
                             .title(bldg.name) // this is what we search clicked markers by so beware
-                            .alpha(1.0f) // 0.0 (invisible) - 1.0 (fully visible)
-                            .snippet(bldg.code + " Hours: 8-5")); // We will just add a new column for hours of operation
+                            .alpha(INVISIBLE)); // 0.0 (invisible) - 1.0 (fully visible)
+
+                    if (!bldg.hours.equals("")) { // parking lots and garages
+                        mMarker.setSnippet(bldg.hours + " (" + bldg.lotType + " lot)");
+                    } else if (!bldg.code.equals("")) { // buildings
+                        mMarker.setSnippet(bldg.code);
+                    }
                     mMarkerArray.add(mMarker); // This is so we can loop through markers later
                 }
                 mLine = reader.readLine(); // increment line
@@ -280,6 +352,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 String url = mBuildingHash.get(marker.getTitle()).url;
 
                 if (url != null) {
+                    // visit the url using the phone's browser
                     Intent openUrl = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(openUrl);
                 }
@@ -291,28 +364,25 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public static boolean isNumeric(String str) {
         try {
             double d = Double.parseDouble(str);
-            d = d + d;
         } catch (NumberFormatException nfe) {
             return false;
         }
         return true;
     }
 
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
-     * If it isn't installed {@link SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
+    // Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
+    // installed) and the map has not already been instantiated.. This will ensure that we only ever
+    // call {@link #setUpMap()} once when {@link #mMap} is not null.
+
+    // If it isn't installed {@link SupportMapFragment} (and
+    // {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
+    // install/update the Google Play services APK on their device.
+
+    // A user can return to this FragmentActivity after following the prompt and correctly
+    // installing/updating/enabling the Google Play services. Since the FragmentActivity may not
+    // have been completely destroyed during this process (it is likely that it would only be
+    // stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
+    // method in {@link #onResume()} to guarantee that it will be called.
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
@@ -326,10 +396,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera.
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
+    // This is where we can add markers or lines, add listeners or move the camera.
+    // This should only be called once and when we are sure that {@link #mMap} is not null.
     private void setUpMap() {
         // For ping location
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -337,14 +405,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             boolean gpsIsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
             boolean networkIsEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-/*            if (gpsIsEnabled) {
+            if (gpsIsEnabled) {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10F, this);
             } else if (networkIsEnabled) {
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 10F, this);
             } else {
                 //Show some kind of message that tells the user that the GPS is disabled.
-                Log.e("setUpMap()","GPS is disabled");
-            }*/
+                Toast.makeText(this, "GPS is disabled.", Toast.LENGTH_SHORT).show();
+            }
         } else {
             //Show some generic error dialog because something must have gone wrong with location manager.
             Log.e("setUpMap()", "Location Manager error");
@@ -352,23 +420,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         // Set zoom and tilt
         CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(38.038024, -84.504686))
-                .zoom(18)
-                .tilt(30) // Sets the tilt of the camera to 30 degrees
+                .target(new LatLng(DEFAULT_LAT, DEFAULT_LNG))
+                .zoom(DEFAULT_ZOOM)
+                .tilt(DEFAULT_TILT)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-        /*// Add Ground Overlay
-        GroundOverlayOptions campusMap = new GroundOverlayOptions()
-                .image(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
-                .position(new LatLng(38.038024, -84.504686), 8600f, 6500f);
-        mMap.addGroundOverlay(campusMap);
-
-        // Change to Satellite to get rid of labels
-        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);*/
-
         // Added for locator button
         mMap.setMyLocationEnabled(true);
+        mMap.setOnCameraChangeListener(getCameraChangeListener());
     }
 
     @Override
@@ -385,7 +445,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onLocationChanged(Location location) {
         if (mListener != null) {
             mListener.onLocationChanged(location);
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+            //mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
         }
     }
 
@@ -405,12 +465,5 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onStatusChanged(String provider, int status, Bundle extras) {
         // TODO Auto-generated method stub
         Toast.makeText(this, "status changed", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
     }
 }
