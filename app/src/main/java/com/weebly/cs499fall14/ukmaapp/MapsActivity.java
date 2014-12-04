@@ -85,6 +85,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 // This is the latitude and longitude the camera is centered on.
                 double updatedLat = position.target.latitude;
                 double updatedLng = position.target.longitude;
+                double originalLat = updatedLat;
+                double originalLng = updatedLng;
 
                 // Check to make sure you are within the rectangular bounds
                 if (position.target.latitude > TOP_LAT_BOUND) {
@@ -100,14 +102,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     updatedLng = RIGHT_LNG_BOUND;
                 }
 
-                // Set zoom and tilt
-                CameraPosition updatedPosition = new CameraPosition.Builder()
-                        .target(new LatLng(updatedLat, updatedLng))
-                        .zoom(position.zoom)
-                        .tilt(position.tilt)
-                        .build();
                 //only animate camera if update needed, reduces camera lag for unnecessary updates
-                if (position.target.longitude != updatedLng || position.target.latitude != updatedLat) {
+                if (originalLat != updatedLat || originalLng != updatedLng) {
+                    // Set zoom and tilt
+                    CameraPosition updatedPosition = new CameraPosition.Builder()
+                            .target(new LatLng(updatedLat, updatedLng))
+                            .zoom(position.zoom)
+                            .tilt(position.tilt)
+                            .build();
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(updatedPosition));
                 }
             }
