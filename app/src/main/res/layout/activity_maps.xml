@@ -41,16 +41,6 @@
             android:layout_alignParentRight="true"
             android:textColor="@android:color/white" />
 
-        <Button
-            android:id="@+id/button_change_markers"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="@string/change_markers"
-            android:onClick="changeMarkersListener"
-            android:layout_below="@id/btn_find"
-            android:layout_alignParentRight="true"
-            android:textColor="@android:color/white" />
-
         <EditText
             android:id="@+id/et_location"
             android:layout_width="fill_parent"
