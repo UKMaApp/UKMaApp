@@ -469,6 +469,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
         // TODO Auto-generated method stub
-        Toast.makeText(this, "status changed", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "status changed", Toast.LENGTH_SHORT).show();
     }
 }
