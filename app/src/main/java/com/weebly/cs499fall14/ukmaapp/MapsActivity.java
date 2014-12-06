@@ -123,7 +123,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         String location = etLocation.getText().toString().toLowerCase();
         Marker closestMarker = null;
 
-        if (location.equals("all")) {
+        if (location.equals("help")) {
+            Toast.makeText(this, "Special searches: help, all, food, buildings, parking, and reset", Toast.LENGTH_LONG).show();
+        } else if (location.equals("all")) {
             // if "all" is searched the transparency of all markers is toggled
             float toggle = VISIBLE;
             if (mMarkerArray.get(0).getAlpha() != INVISIBLE) {
@@ -306,7 +308,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     // This parses the Buildings.csv file and populates the map with markers for buildings.
     private void setUpMarkers() {
-        Toast.makeText(this, "Special searches: all, food, buildings, parking, and reset", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Special searches: help, all, food, buildings, parking, and reset", Toast.LENGTH_LONG).show();
         BufferedReader reader = null;
         try {
             // Open the .csv (comma separated value) file
