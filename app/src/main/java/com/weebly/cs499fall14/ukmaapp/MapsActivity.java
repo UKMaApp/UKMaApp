@@ -27,6 +27,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -44,7 +45,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final double DEFAULT_LAT = 38.038024;
     private static final double DEFAULT_LNG = -84.504686;
     private static final int DEFAULT_ZOOM = 18;
-    private static final int DEFAULT_TILT = 30;
+    private static final float DEFAULT_TILT = 30;
     private static final float INVISIBLE = 0.0f;
     private static final float VISIBLE = 1.0f;
 
@@ -90,21 +91,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                 // Check to make sure you are within the rectangular bounds
                 if (position.target.latitude > TOP_LAT_BOUND) {
-                    updatedLat = TOP_LAT_BOUND;
-                }
+                    updatedLat = TOP_LAT_BOUND; }
                 if (position.target.latitude < BOTTOM_LAT_BOUND) {
-                    updatedLat = BOTTOM_LAT_BOUND;
-                }
+                    updatedLat = BOTTOM_LAT_BOUND; }
                 if (position.target.longitude < LEFT_LNG_BOUND) {
-                    updatedLng = LEFT_LNG_BOUND;
-                }
+                    updatedLng = LEFT_LNG_BOUND; }
                 if (position.target.longitude > RIGHT_LNG_BOUND) {
-                    updatedLng = RIGHT_LNG_BOUND;
-                }
+                    updatedLng = RIGHT_LNG_BOUND; }
 
                 //only animate camera if update needed, reduces camera lag for unnecessary updates
-                if (originalLat != updatedLat || originalLng != updatedLng) {
-                    // Set zoom and tilt
+                if (originalLat != updatedLat || originalLng != updatedLng || position.tilt != DEFAULT_TILT) {
+                    // Set camera zoom and tilt
                     CameraPosition updatedPosition = new CameraPosition.Builder()
                             .target(new LatLng(updatedLat, updatedLng))
                             .zoom(position.zoom)
@@ -147,9 +144,32 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     .tilt(DEFAULT_TILT)
                     .build();
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        } else if (location.equals("buildings") || location.equals("food") || location.equals("parking")) {
+            for (Marker m : mMarkerArray) {
+                Building bldg = mBuildingHash.get(m.getTitle());
+                if (location.equals("parking")) {
+                    if (!bldg.type.equals("buildings") && !bldg.type.equals("food")) {
+                        m.setAlpha(VISIBLE);
+                    } else {
+                        m.setAlpha(INVISIBLE);
+                    }
+                } else {
+                    if (bldg.type.equals(location)) {
+                        m.setAlpha(VISIBLE);
+                    } else {
+                        m.setAlpha(INVISIBLE);
+                    }
+                }
+            }
         } else if (!location.equals("")) {
             // Initial closest is 1000 since that is huge and all other "distances" will be closer.
             int closestStrDistance = HUGE_STR_DIST;
+
+            for (Marker m : mMarkerArray) {
+                m.setAlpha(INVISIBLE); // make all markers transparent
+            }
+
+            // NOTE: This whole area may seem confusing. Sorry, it's effective for searching.
 
             // Loop through all markers. For each marker several comparisons are done to find
             // the closest string match.
@@ -165,9 +185,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             //    "ralph g. anderson")
             for (Marker m : mMarkerArray) {
                 String markerName = mBuildingHash.get(m.getTitle()).name; // retrieve current marker name
-                m.setAlpha(INVISIBLE); // make all markers transparent
 
-                // If exact name match
+                // If exact name match we can stop searching the rest of the markers
                 if (location.equals(markerName.toLowerCase())) {
                     closestMarker = m;
                     break;
@@ -198,8 +217,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     }
                 }
 
-                // Substring because you want to compare "Ralph" to "Ralph" instead of
-                //   "Ralph" to "Ralph G. Anderson"
+                // Substring because you want to compare "Chem" to "Chem" instead of
+                //   "Chem" to "Chemistry" or "Chemistry Physics Building"
                 String subMarkerName = markerName.substring(0, Math.min(markerName.length(), location.length()));
                 thisStrDistance = levenshteinDistance(location, subMarkerName);
                 if (thisStrDistance < closestStrDistance) {
@@ -238,66 +257,52 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         return costs[b.length()];
     }
 
+    // A "Building" holds all of the information a building has. This information is linked to a
+    // marker which is placed at the building's location.
     public class Building {
-        public String name = "";
-        public String code = "";
-        public double lat = 0.0;
-        public double lng = 0.0;
-        public String url = "";
-        public String lotType = "";
-        public String hours = "";
+        public String name = "error"; // White Hall Classroom Building
+        public String code = "";      // CB
+        public double lat = 0.0;      // 38.7
+        public double lng = 0.0;      // -87.5
+        public String url = "";       // www.whitehall.com
+        public String type = "";      // buildings
+        public String hours = "";     // ""
 
-        /* This constructor will fill the fields based on the
-           incoming array "tokens" which represents a row from the table where
-           each index is a column. example
-           tokens[x] = {White Hall, CB, 38.038079, -84.503844, http://www.whitehall.com/}
+        /* This constructor will fill the fields based on the incoming array "tokens" which
+           represents a row from the table where each index is a column.
 
-         * Once the fields are filled the Building is hashed by its name so it can be
-           searched for later like this: buildingHash.get("White Hall")
+           For example:
+           tokens[x] = {            name, code,  lat,   lng,   url,      type,                 hours}
+           tokens[y] = {      White Hall,   CB, 38.7, -84.5, x.com, buildings,                      }
+           tokens[z] = {Parking Garage 6,  PG6, 39.0, -84.9, p.com,         E, 5:30 a.m. - 3:30 p.m.}
 
-         * NOTE: It will only hash the object if lat and lng are given and numeric */
+         * NOTE: Buildings need to have at least 4 tokens
+         * NOTE: It will only hash the object if lat and lng are given and numeric
+         */
         Building(String[] tokens) {
-            name = "Error";
-            switch (tokens.length) {
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
-                        name = tokens[0];
-                        code = tokens[1];
-                        lat = Double.parseDouble(tokens[2]);
-                        lng = Double.parseDouble(tokens[3]);
-                    }
-                    break;
-                case 5:
-                    if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
-                        name = tokens[0];
-                        code = tokens[1];
-                        lat = Double.parseDouble(tokens[2]);
-                        lng = Double.parseDouble(tokens[3]);
-                        url = tokens[4];
-                    }
-                    break;
-                case 6:
-                    break;
-                case 7:
-                    if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
-                        name = tokens[0];
-                        code = tokens[1];
-                        lat = Double.parseDouble(tokens[2]);
-                        lng = Double.parseDouble(tokens[3]);
-                        url = tokens[4];
-                        lotType = tokens[5];
-                        hours = tokens[6];
-                    }
-                default:
-                    break;
+            // Every "if" statement is in place to prevent seg faults. Handle with care.
+            if (tokens.length > 3) {
+                if (isNumeric(tokens[2]) && isNumeric(tokens[3])) {
+                    name = tokens[0];
+                    code = tokens[1];
+                    lat = Double.parseDouble(tokens[2]);
+                    lng = Double.parseDouble(tokens[3]);
+                    if (tokens.length > 4) {
+                        url = tokens[4]; }
+                    if (tokens.length > 5) {
+                        type = tokens[5]; }
+                    if (tokens.length > 6) {
+                        hours = tokens[6]; }
+                }
             }
-            if (!name.equals("Error")) {
+
+            /* name is declared to be "error" so if anything goes wrong in the construction of
+               the building object and name is never set to a different string the building is
+               assumed to be broken and will not be hashed.
+
+             * Buildings are hashed by their names so search via: buildingHash.get("White Hall")
+             */
+            if (!name.equals("error")) {
                 mBuildingHash.put(name, this);
             }
         }
@@ -327,10 +332,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             .title(bldg.name) // this is what we search clicked markers by so beware
                             .alpha(INVISIBLE)); // 0.0 (invisible) - 1.0 (fully visible)
 
-                    if (!bldg.hours.equals("")) { // parking lots and garages
-                        mMarker.setSnippet(bldg.hours + " (" + bldg.lotType + " lot)");
-                    } else if (!bldg.code.equals("")) { // buildings
+                    if ((bldg.type.equals("buildings") || bldg.type.equals("food")) && !bldg.code.equals("")) {
                         mMarker.setSnippet(bldg.code);
+                    } else if (!bldg.hours.equals("")) {
+                        mMarker.setSnippet(bldg.hours + " (" + bldg.type + " lot)");
                     }
                     mMarkerArray.add(mMarker); // This is so we can loop through markers later
                 }
@@ -375,32 +380,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         return true;
     }
 
-    // Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-    // installed) and the map has not already been instantiated.. This will ensure that we only ever
-    // call {@link #setUpMap()} once when {@link #mMap} is not null.
-
-    // If it isn't installed {@link SupportMapFragment} (and
-    // {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-    // install/update the Google Play services APK on their device.
-
-    // A user can return to this FragmentActivity after following the prompt and correctly
-    // installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-    // have been completely destroyed during this process (it is likely that it would only be
-    // stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-    // method in {@link #onResume()} to guarantee that it will be called.
-    private void setUpMapIfNeeded() {
-        // Do a null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
-            // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-            // Check if we were successful in obtaining the map.
-            if (mMap != null) {
-                setUpMap();
-                mMap.setLocationSource(this);
-            }
-        }
-    }
-
     // This is where we can add markers or lines, add listeners or move the camera.
     // This should only be called once and when we are sure that {@link #mMap} is not null.
     private void setUpMap() {
@@ -423,7 +402,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             Log.e("setUpMap()", "Location Manager error");
         }
 
-        // Set zoom and tilt
+        // Set camera zoom and tilt to default position in center of campus
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(DEFAULT_LAT, DEFAULT_LNG))
                 .zoom(DEFAULT_ZOOM)
@@ -434,6 +413,33 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Added for locator button
         mMap.setMyLocationEnabled(true);
         mMap.setOnCameraChangeListener(getCameraChangeListener());
+    }
+
+    /* Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
+   installed) and the map has not already been instantiated.. This will ensure that we only ever
+   call {@link #setUpMap()} once when {@link #mMap} is not null.
+
+ * If it isn't installed {@link SupportMapFragment} (and
+   {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
+   install/update the Google Play services APK on their device.
+
+ * A user can return to this FragmentActivity after following the prompt and correctly
+   installing/updating/enabling the Google Play services. Since the FragmentActivity may not
+   have been completely destroyed during this process (it is likely that it would only be
+   stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
+   method in {@link #onResume()} to guarantee that it will be called.
+ */
+    private void setUpMapIfNeeded() {
+        // Do a null check to confirm that we have not already instantiated the map.
+        if (mMap == null) {
+            // Try to obtain the map from the SupportMapFragment.
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+            // Check if we were successful in obtaining the map.
+            if (mMap != null) {
+                setUpMap();
+                mMap.setLocationSource(this);
+            }
+        }
     }
 
     @Override
