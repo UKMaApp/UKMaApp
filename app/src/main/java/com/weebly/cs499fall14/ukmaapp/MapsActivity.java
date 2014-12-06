@@ -22,12 +22,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.GroundOverlay;
-import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -38,7 +34,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private HashMap<String, Building> mBuildingHash = new HashMap<String, Building>();
     private ArrayList<Marker> mMarkerArray = new ArrayList<Marker>();
     private static final int HUGE_STR_DIST = 1000;
-    private static final double TOP_LAT_BOUND    =  38.046;
+    private static final double TOP_LAT_BOUND    =  38.050;
     private static final double BOTTOM_LAT_BOUND =  38.000;
     private static final double LEFT_LNG_BOUND   = -84.515;
     private static final double RIGHT_LNG_BOUND  = -84.495;
@@ -100,7 +96,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     updatedLng = RIGHT_LNG_BOUND; }
 
                 //only animate camera if update needed, reduces camera lag for unnecessary updates
-                if (originalLat != updatedLat || originalLng != updatedLng || position.tilt != DEFAULT_TILT) {
+                if (originalLat != updatedLat || originalLng != updatedLng) {
                     // Set camera zoom and tilt
                     CameraPosition updatedPosition = new CameraPosition.Builder()
                             .target(new LatLng(updatedLat, updatedLng))
@@ -310,7 +306,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     // This parses the Buildings.csv file and populates the map with markers for buildings.
     private void setUpMarkers() {
-        Toast.makeText(this, "Search \"all\" to show/hide all buildings or \"reset\" to re-center your camera", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Special searches: all, food, buildings, parking, and reset", Toast.LENGTH_LONG).show();
         BufferedReader reader = null;
         try {
             // Open the .csv (comma separated value) file
