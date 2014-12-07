@@ -24,6 +24,7 @@ import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -44,6 +45,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final float DEFAULT_TILT = 30;
     private static final float INVISIBLE = 0.0f;
     private static final float VISIBLE = 1.0f;
+    private boolean resetTilt = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,10 +92,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     updatedLat = TOP_LAT_BOUND; }
                 if (position.target.latitude < BOTTOM_LAT_BOUND) {
                     updatedLat = BOTTOM_LAT_BOUND; }
-                if (position.target.longitude < LEFT_LNG_BOUND) {
-                    updatedLng = LEFT_LNG_BOUND; }
                 if (position.target.longitude > RIGHT_LNG_BOUND) {
                     updatedLng = RIGHT_LNG_BOUND; }
+                if (position.target.longitude < LEFT_LNG_BOUND) {
+                    updatedLng = LEFT_LNG_BOUND; }
 
                 //only animate camera if update needed, reduces camera lag for unnecessary updates
                 if (originalLat != updatedLat || originalLng != updatedLng) {
@@ -104,6 +106,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             .tilt(position.tilt)
                             .build();
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(updatedPosition));
+                }
+                if (resetTilt) { // this is only called when a filter word is searched
+                    // Set camera zoom and tilt
+                    CameraPosition updatedPosition = new CameraPosition.Builder()
+                            .target(new LatLng(position.target.latitude, position.target.longitude))
+                            .zoom(position.zoom)
+                            .tilt(DEFAULT_TILT)
+                            .build();
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(updatedPosition));
+                    resetTilt = false;
                 }
             }
         };
@@ -143,22 +155,50 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     .build();
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         } else if (location.equals("buildings") || location.equals("food") || location.equals("parking")) {
+            // This will make all buildings that match the filter visible and it will zoom to
+            // a level that has every building on screen. For this we need to calculate the
+            // southwest and northeast corners.
+            // ((SW_lat, SW_lng), (NE_lat, NE_lng)) == ((minLat, minLng), (maxLat, maxLng))
+            double maxLat = BOTTOM_LAT_BOUND;
+            double maxLng = RIGHT_LNG_BOUND;
+            double minLat = TOP_LAT_BOUND;
+            double minLng = LEFT_LNG_BOUND;
+
             for (Marker m : mMarkerArray) {
                 Building bldg = mBuildingHash.get(m.getTitle());
                 if (location.equals("parking")) {
                     if (!bldg.type.equals("buildings") && !bldg.type.equals("food")) {
                         m.setAlpha(VISIBLE);
+                        if (bldg.lat > maxLat) {
+                            maxLat = bldg.lat; }
+                        if (bldg.lat < minLat) {
+                            minLat = bldg.lat; }
+                        if (bldg.lng > maxLng) {
+                            minLng = bldg.lng; }
+                        if (bldg.lng < minLng) {
+                            minLng = bldg.lng; }
                     } else {
                         m.setAlpha(INVISIBLE);
                     }
                 } else {
                     if (bldg.type.equals(location)) {
                         m.setAlpha(VISIBLE);
+                        if (bldg.lat > maxLat) {
+                            maxLat = bldg.lat; }
+                        if (bldg.lat < minLat) {
+                            minLat = bldg.lat; }
+                        if (bldg.lng > maxLng) {
+                            minLng = bldg.lng; }
+                        if (bldg.lng < minLng) {
+                            minLng = bldg.lng; }
                     } else {
                         m.setAlpha(INVISIBLE);
                     }
                 }
             }
+            LatLngBounds bounds = new LatLngBounds(new LatLng(minLat, minLng), new LatLng(maxLat, maxLng));
+            resetTilt = true;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 10));
         } else if (!location.equals("")) {
             // Initial closest is 1000 since that is huge and all other "distances" will be closer.
             int closestStrDistance = HUGE_STR_DIST;
