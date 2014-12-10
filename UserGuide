@@ -1,0 +1,40 @@
+User Guide
+University of Kentucky Ma-App
+Senior Design
+Fall 2014
+
+ 
+
+The Interface
+
+ 
+1.	Search Bar
+-	Can search for building names, building codes, and building nicknames.
+-	Supports the following special searches:
+-	all: Toggles all UK building markers on/off
+-	help: Displays help message.
+-	food: Marks all food locations on campus.
+-	parking: Marks all parking structures on campus.
+-	reset: Recenters and zooms map back to the original starting point.
+-	Search always returns closes result and centers map on that location. It pulls up the information window for the building as shown in (3).
+
+2.	User Location Ping
+-	When pressed, map attempts to find user’s location and zooms map to that location.
+-	A blue dot and circle will indicate the approximate user location.
+
+3.	Building Information Window
+-	Appears after a building is searched or clicked.
+-	Contains building name and building code. For parking structures, it also provides the lot type and restriction times for the lot.
+-	Clicking on the information window opens up the building website for additional information and a picture of the building.
+
+4.	Map Buildings
+-	Each building on campus is clickable. When selected, an information window like in (3) appears. 
+
+5.	Zoom In and Out
+-	Buttons to zoom the map in and out. Press (+) to zoom the map in and (-) to zoom the map out on the current location.
+
+How to Install
+Steps:
+1.	On the android device, go to the play store and search “UKMaApp”.
+2.	Select the download option and the app will automatically install to your device.
+3.	The app is now installed and ready for use.
