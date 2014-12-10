@@ -1,0 +1,321 @@
+Interactive Android Map Application
+University of Kentucky Computer Science
+Senior Design
+Fall 2014
+ 
+Table of Contents
+Personnel	3
+Disclaimer	3
+Abstract	3
+Introduction	4
+Project Specifications	4
+Overview	4
+Features	4
+**Extra features	4
+Interface	5
+Project Planning	6
+Schedule and Milestones	6
+Platforms, Tools and Languages	6
+Estimation of Product Size	6
+Design	7
+Environment	7
+Module Descriptions and Flow of Data	7
+Screenshots	8
+Desired Application Enhancements	10
+Initial Application Implementations	11
+Implementation	11
+Future Enhancements	11
+Difficulty During Implementation	11
+Design Changes During Implementation	12
+Test Plan	12
+Integration/Function Testing	12
+System Testing	15
+User/Customer Testing:	16
+Conclusion	18
+
+ 
+Personnel
+•	Andrew Ford
+•	Andrew Shields
+•	Shannon Simpson
+•	John Tepe
+•	Logan Wells
+
+Computer Science Senior Design
+University of Kentucky
+December 17th, 2014
+
+Disclaimer
+This project has been designed and implemented as a part of the requirements for CS-499 Senior Design Project for Fall 2014 semester. 
+While the authors make every effort to deliver a high quality product, we do not guarantee that our products are free from defects. Our software is provided "as is," and you use the software at your own risk.
+We make no warranties as to performance, merchantability, fitness for a particular purpose, or any other warranties whether expressed or implied.
+No oral or written communication from or information provided by the authors or the University of Kentucky shall create a warranty.
+Under no circumstances shall the authors or the University of Kentucky be liable for direct, indirect, special, incidental, or consequential damages resulting from the use, misuse, or inability to use this software, even if the authors or the University of Kentucky have been advised of the possibility of such damages.
+
+Abstract
+The plan is to design and implement an interactive map app (UK Ma-App) for the Android market. This app will be a map that is interactive, allowing the user to zoom in and out, search for the building/location they want to locate, and even click on the location where they will be provided a link directing the user to the location’s website so that more information about that location can be found. A GPS “ping” will also keep track of the user’s location while using the app. Parking lots will be labeled according to their permits (C/R/K, etc.) and local business/food that are located on, and around, campus will be available as well. Users will be able to filter the search to locate things more easily. 
+      Students on campus are in need of a new map app since the current one does not offer these specifications and the current one is unreliable at best. At this time, UKMobile has 2/5 stars with reviews that include “primitive”, “very poor”, “crashes”, “incredibly out of date”, and “embarrassing”. We feel that we can provide a better map app than the one available.
+
+Introduction
+As a new freshman on campus, knowledge about any of the buildings on campus is unlikely. In an attempt to solve this, the University of Kentucky had a mobile app developed. The Android version of the mobile application has 2/5 stars and does not allow the search of buildings. An up-to-date development of a mobile Android application that is both interactive and accurate is in dire need. This application will include a search bar so users can search for buildings and food, accurate tracking of the user’s current location, and information about each building as the building is tapped on the phone. Since the Android App currently available does not provide any of these options, this will be an immediate improvement. Our customer will review the application and provide suggestions during the application development process.
+Project Specifications
+
+Overview
+The project will use Google’s API’s to track the user’s location. The user is tracked by Global Positioning System (GPS) technology and the location is updated frequently to give an accurate depiction of the user’s current location at a given time. A list of features were prioritized from greatest importance to least:
+
+Features
+•	A working mobile map app of the UK campus that is NOT linked to the current one. A map with limited bounds.
+•	"Ping" users current locations
+•	Searchable buildings (search bar)
+•	When user searches for a location, with an auto complete list that will assist the user in finding the location. Once they pick the location through the search bar, the map will center on that location.
+•	We allow click-able locations with links to the buildings websites with hours
+•	Parking lots be labeled by letters (R/C/E, etc.)
+
+**Extra features
+•	Add food on and surrounding campus.
+•	Filters for Food/Buildings/etc.
+•	Refresh Button
+•	Satellite View
+•	Major paths (Cats Paths?)
+•	Emergency Tower Locations
+•	Drop a Pin (estimated walking time) - multiple pins for classes (ordered pins)
+•	Sidewalks function implementation
+•	“!” For events happening now
+•	Achievements - get to every location, etc. ("StudentScore")
+**Note: These extra features were to be implemented if time permitted.
+
+Interface
+The interface of the application will be a static map of buildings on campus along with a blue circular marker indicating the current location of the user. A search bar will be at the top for the user to search on buildings they wish to find. A screen shot is shown in Figure 1.
+Figure 1: Main Screen – Screen Shot
+ 
+ 
+Project Planning
+Milestones and schedule
+The following milestones were hit as the project was being developed:
+•	October 3rd: Web site due.
+•	November 3rd: Ping Location implemented.
+•	November 23rd: Markers and tooltip Info implemented.
+•	November 25th: Figured out what was making the application slow on load. Fixed this bug.
+•	November 28th: Search bar implemented.
+•	December 2nd: Full application done with obvious bugs fixed. Open for customer testing.
+•	December 5th: Application tested.
+To see a full recap of meetings of the team including who attended and what was discussed, please see the excel sheet labeled “Meeting Recaps.xlsx”.
+
+Platforms, Tools and Languages
+Due to the unique nature of mobile applications, different versions will need to be supported. According to Google’s Android developer web site (https://developer.android.com/about/dashboards/index.html), approximately 90% of the Android market is using Android version 4.0 and above (KitKat, Ice Cream Sandwich and Jelly Bean). Therefore, the logical platform to support is 4.0 and above.
+  
+The primary spoken language on University of Kentucky’s campus is English, thus this will be the primary language the application will support at this time.
+The project began development using the Eclipse Integrated Development Environment (IDE). Due to the steep learning curve involved with Eclipse, we sought out other IDEs that might be more applicable to this development project. Upon meeting with our customer, Android Studio was suggested and used for the duration of development. The version of Android Studio used is: Beta 0.8.9.
+Since this was a group project, a repository to hold the code was deemed necessary. The repository of choice chosen, and confirmed by our customer, was GitHub.
+Estimation of Product Size
+•	Original estimation of lines of code: 2600
+•	Actual lines of code: 518 (Total document including comments)
+o	Search Bar code: 172 (lines 124 – 296)
+o	GPS and Location Services code:  33 (421 – 454)
+o	Latitude/Longitude Bounds code: 46 (lines 76 – 122)
+o	Building information upon tapping screen code: 70 (349 – 419)
+Our estimation of lines of code was skewed because of the group’s lack of experience with Java code and Android Mobile application development.
+
+Design
+
+Environment
+The application target will be designed to run on mobile Android Devices using version 4.0 and above. The mobile device will need to have GPS capability in order to function properly. If the device were to not have GPS capability, the application could result in unintended behavior. Coding will be done using Google’s Android Studio (Beta 0.8.9). Testing of the product will be done on multiple devices and emulators supplied by Android Studio.
+Module Descriptions and Flow of Data
+The application will implement 3 different modules.
+•	GPS and Location Services – Keeps track of the user’s location and displays it on the map visible to the user. The user’s location will be updated frequently to give the user a “real-time” display of their location.
+•	Building Information – Gives information about the building selected. This will also give the user a link to press to go to the building’s web site, if one can be provided.
+•	Search Bar – Allows the user to search for a locations on campus. If the location exists, a pin will be dropped on that building. If the building does not match one of the list enough to be found within a certain amount of iterations through the algorithm, the user will be notified to try again.
+A majority of the data flow will be from the APIs being constantly called to keep the location of the user up to date. However, there will be other modules pulling data from other sources. The Figure 2 shows the full data flow.
+ 
+Figure 2: Data Flow
+ 
+Screenshots
+Figure 3 and 4 provide example screens of what the user will see once they start up the mobile application. In Figure 3 shows the basic main screen display of the phone. This will depend on the phone the user may be running the app on. The interface the application supplies is the map itself with the search bar at the top. As you can see, the user’s location is pinged to the center of the map when the application starts up. Figure 4 depicts how the screen will appear once a building is searched for and found. In Figure 4, the user searched for “Willy T”, which is a common nickname for the main library, W. T. Young Library. By adding common nicknames to the file with the buildings, this one has been found and the map has centered on the found location. Since the user is not next to this building when it was searched, the user’s location is not indicated. To reorient on the user’s location, the button in the top right will be tapped.
+Figure 3: Example Screen Shot 1 – Main Screen
+ 
+Figure 4: Example Screen Shot 2 – Building Found
+ 
+An example of a search to the William T. Young Library using the nickname search “Willy T”
+
+Desired Application Enhancements
+If time permitted, the following enhancements were to be made to the application:
+	Add food on and surrounding campus.
+	Filters for Food/Buildings/etc.
+	Refresh Button
+•	Major paths (Cats Paths?)
+•	Emergency Tower Locations
+•	Satellite View
+•	Drop a Pin (estimated walking time) - multiple pins for classes (ordered pins)
+•	Sidewalks function implementation
+•	“!” For events happening now
+•	Achievements - get to every location, etc. ("StudentScore")
+Each of the implementations would require research on implementation, implementing the code and regression testing. The amount of time this would require was more than what the semester allotted. Due to time constraints, only a few of the enhancements were able to be implemented. Implemented enhancements are denoted by a check mark.
+
+Initial Application Implementations
+The main idea was to get a map application that was specific to University of Kentucky’s campus for incoming freshman and visitors to use. Therefore, a basic shell with information about each of the buildings was to be implemented. The original list of functionality are as follows:
+	A working mobile map app of the UK campus that is NOT linked to the current one. A map with limited bounds.
+	"Ping" users current locations
+	Searchable buildings (search bar)
+	When user searches for a location, with an auto complete list that will assist the user in finding the location. Once they pick the location through the search bar, the map will center on that location.
+	We allow click-able locations with links to the buildings websites with hours
+	Parking lots be labeled by letters (R/C/E, etc.)
+Given the allotted time this semester, all of these features, including some extra features, were able to be implemented.
+
+Implementation
+
+Future Enhancements
+The only foreseeable enhancements to the application would be the unimplemented “Desired Application Enhancements” under the “Design” section. An Apple implementation of the application may also be in consideration for future development. 
+A ground overlay to give a more “University of Kentucky” feel to the application is another idea. The ground overlay will take a PDF of any kind and “post it” against the google maps map. A customizable feel will be given if this were to be implemented.
+Difficulty During Implementation
+With every development project comes its own set of difficulties. The difficulties encountered in this application were trying to find an emulator that would run on everyone’s PC. Some emulators in Android Studio would work in some peoples’ PC and others would not. The solution for this was that someone would implement some code and someone with a working emulator/Android Phone would test it and explain to the person requesting the test what happened. This was a cumbersome solution but worked nonetheless.
+Getting the API key required by Google’s services to work for everybody was also a task in of itself. The solution for this was to get the SHA key from everyone’s Java Development Environment (JDE) and register it with Google’s development site. This allowed for people to make calls to the services and get the desired output from the service.
+Design Changes During Implementation
+There were very few design changes during the implementation process. The main design change was the ground overlay. Due to the amount of time in the semester, a suitable pdf for the ground overlay was unable to be found. To work around this, the parking lots and everything else that was to be covered by the ground overlay was added as a marker.
+
+Test Plan
+Due to the uniqueness of the application, Unit Testing was very difficult to do and had to be pushed to the Integration/Function testing portion of the project. The reason it was moved to this testing section was the implementation of the services. In order to test a unit in the application, a Google service had to be used. The Google Services were implemented in the main activity of the application and regression testing was done as each unit was added to the overall project.
+Integration/Function Testing
+Test Case No.	Test Case Description	Test Case Success Description
+	Testing the location services	
+1	Turn on Application (Normal Case)	Application turns on. Current location is centered on.
+2	Test the location ping. Walk around campus and test the location. (Normal Case)	The ping keeps an up to date 
+marking of where your location is on campus.
+3	Test the location ping with data turned off but still connected to UK's Wi-Fi. (Edge Case)	The ping location keeps an up to date marking of where your location is on campus.
+4	Test location ping with Wi-Fi turned off. Make sure appropriate error message is displayed. (Error Case)	Error message should be displayed instructing the user to turn on their data.
+5	Sprint from one building to another. Make sure location is updated properly. (Edge Case)	Location is properly kept up to date and doesn’t "lag" behind.
+		
+	Test Name Translator	
+6	Type in "RGAN" into the search bar. (Normal Case)	Ralph G. Anderson building is correctly pinned on the map.
+7	Type in "FPAT" into the search bar. (Normal Case)	F. Paul Anderson Tower is correctly pinned on the map.
+8	Type in "Willy T" into the search bar. (Normal Case)	William T. Young library is correctly pinned on the map.
+9	Type in "POT" into the search bar. (Normal Case)	Patterson Office Tower is correctly pinned onto the map.
+10	Type in "B&E" into the search bar. (Normal Case)	Business and Economics building is correctly pinned onto the map.
+11	Type in "FB" into the search bar. (Normal Case)	Funkhouser Building is correctly pinned onto the map.
+12	Type in "CB" into the search bar. (Normal Case)	Classroom "White Hall" Building is correctly pinned onto the map.
+13	Type in " I don’t Exist" into the search bar (Error Case)	A "Location not found" message is displayed to the user.
+14	Leave the search bar blank. (Error Case)	An error message stating "Type something into the search bar."
+		
+	Search Bar	
+15	Type in "Ralph G. Anderson Building" into the search bar. (Normal Case)	Ralph G. Anderson building is correctly pinned on the map. The building is also centered on the phone.
+16	Type in "F. Paul  Anderson Tower" into the search bar. (Normal Case)	F. Paul Anderson Tower is correctly pinned on the map. The building is also centered on the phone.
+17	Type in "William T. Young Library" into the search bar. (Normal Case)	William T. Young library is correctly pinned on the map. The building is also centered on the phone.
+18	Type in "Patterson Office Tower" into the search bar. (Normal Case)	Patterson Office Tower is correctly pinned onto the map. The building is also centered on the phone.
+19	Type in "Food" into the search bar. (Edge Case)	Restaurants are pinned on the map.
+20	Type in "I don’t exist anywhere" into the search bar. (Error Case)	A "Location not found" message is displayed to the user.
+21	Leave the search bar blank. (Error Case)	An error message stating "Type something into the search bar."
+		
+	Location Descriptions	
+22	Tap on Ralph G Anderson Building. (Normal Case)	Information about Ralph G. Anderson Building is displayed in a small box. Information includes hours of operation, a picture of the building and web site.
+23	Tap on Whitehall Classroom Building. (Normal Case)	Information about Whitehall Building is displayed in a small box. Information includes hours of operation, a picture of the building and web site, if there is one.
+24	Tap on K lot.	Information about K lot should come up including the hours the lot is patrolled and the required parking pass.
+25	Tap on Davis Marksbury building on the edge of campus. (Edge Case)	Information about Davis Marksbury building is displayed in a small box. Information includes hours of operation, a picture of the building and web site, if there is one.
+26	Tap on the 5th/3rd building downtown. (Error Case)	Nothing should happen.
+System Testing
+The system testing will be done in the form of user stories. 
+Testing is to be done on Samsung Galaxy S, S4, S5, Note 4, as well as the LG G3 and LG Lucid 3. Testing is planned to be made on as many of the following android operating systems: 5.0 Lollipop, 4.4 KitKat, 4.3 Jelly Bean, 4.1 Jelly Bean, 4.0 Ice Cream Sandwich, 3.0 Honey Comb, 2.3 Gingerbread, 2.2 Froyo, 2.0 Éclair, and 1.6 Donut.
+The following user stories are to be used:
+**Note: Some of these scenarios contain some features that may not be implemented
+1.       User wants to know their current location on campus:
+       a.       The user starts up the phone application.
+       b.      A screen is displayed notifying the user that certain data rates may apply when using location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+2.       User wants to know where the “Slone” building is.
+       a.       The user starts up the phone application.
+       b.      A screen is displayed notifying the user that certain data rates may apply when using location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+       d.      The user taps the search bar. The keyboard will be displayed on the screen so that the user is able to type.
+       e.      The user types in “Slone Building” into the search bar.
+       f.        A pin is dropped onto the Slone Building and the view pans to the pin.
+3.       User wishes to the see the safe paths on campus.
+       a.       The user starts up the phone application.
+       b.      A screen is displayed notifying the user that certain data rates apply when using location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+       d.      UK Safe paths on campus are indicated by blue paw prints on the map.
+4.       User wants to see what a specific building does.
+       a.       The user starts up the phone application.
+       b.       A screen is displayed notifying the user that certain data rates may apply when using the location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+       d.      The user navigates around the map and finds the desired marked building.
+       e.      The user then taps the building.
+       f.        A dialogue is displayed giving information about the building tapped.
+5.       User wants to see a specific building’s hours of operation.
+       a.       The user starts up the phone application.
+       b.      A screen is displayed notifying the user that certain data rates may apply when using the location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+       d.      The user navigates around the map and finds the desired marked building.
+       e.      The user then taps the building.
+       f.        A dialogue is displayed giving the hours of operation of the tapped building.
+6.       User wants to park at K lot and doesn't know where the lot is.
+       a.       The user starts up the phone application.
+       b.      A screen is displayed notifying the user that certain data rates may apply when using the location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+       d.      The user navigates around the map and finds the parking lot marked “K”.
+7.       **User is looking for something to eat nearby.
+       a.       The user starts up the phone application.
+       b.      A screen is displayed notifying the user that certain data rates may apply when using location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+       d.      The user taps the search bar. The keyboard will be displayed on the screen so that the user is able to type.
+       e.      The user types in “food” into the search bar.
+       f.        Pins are dropped on nearby food vendors.
+8.       **User wants to know how long it will take to walk to FPAT.
+       a.       The user starts up the phone application.
+       b.      A screen is displayed notifying the user that certain data rates may apply when using location services.
+       c.       The user’s location is indicated by a ping on the map displayed.
+       d.      The user types in “FPAT” into the search bar.
+       e.      A pin is dropped on the FPAT building.
+       f.        The user taps on the pin and options will be displayed.
+       g.       A “Route me here” button will be displayed.
+       h.      The user clicks the button and a route will be displayed between the user’s ping and the desired location.
+
+User/Customer Testing:
+After the User Stories were thoroughly tested, the product was then released to a testing group (non-developers). Once the testing group used the application and navigated around campus, they were encouraged to fill out a survey asking various questions like: how well the app worked for them, was your location accurately displayed on the phone, etc. The survey questions are as follows:
+What is your Name or Chosen Alias? 
+Please keep this the same every time you fill this out.
+ 
+What is the Date? 
+ 
+What phone are you using? 
+ 
+Which Android Operating System are you using? 
+  5.0 Lollipop
+  4.4 KitKat
+  4.3 Jelly Bean
+  4.1 Jelly Bean
+  4.0 Ice Cream Sandwich
+  3.0 Honey Comb
+  2.3 Gingerbread
+  2.2 Froyo
+  2.0 Éclair
+  1.6 Donut
+Are you happy with the app in general? 
+1-5 with 1 being not happy at all, 5 being very happy.
+  1
+  2
+  3
+  4
+  5
+Is your location "ping" correct? 
+  Yes
+  No
+
+Are building links correct? 
+If not, please fill out "Other" with the incorrect ones.
+  Yes
+  Other:  
+Are locations filtered correctly? 
+If not, please fill out "other" with the incorrect ones.
+  Yes
+  Other:  
+Is navigating the app easy to do? 
+1-5 with 1 being not easy at all, 5 being very easy.
+  1
+  2
+  3
+  4
+  5
+Have you recommended this app to others? 
+  Yes
+  No
+
+Conclusion
+The project has been delivered to Nick Such. Overall, Nick approves of the application’s functionality and is happy with the product. All of the specifications were met and the enhancements to the application are believed to be accomplishable in the future. 
