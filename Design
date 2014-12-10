@@ -1,0 +1,105 @@
+UK Map App
+Project Team Includes:
+Shannon Simpson
+Andrew Shields
+Andrew Ford
+John Tepe
+Logan Wells
+
+Overview:
+	The UK Map App will be designed using the Eclipse Integrated Development Environment and written in Java. This application will be designed for use on Android devices. The application will be designed to give the user information about campus buildings and where the user is currently in relation to campus. A search bar will be visible so that the user can search on specific buildings. If the building is found, the building will have a pin dropped and the screen will pan to the location of the desired building. Additional features will be added if time permits.
+Operating Environment:
+	The application is designed to run on mobile Android devices, more specifically cell phones. Testing will be done on Android Tablets as well, resources permitting.
+Data Flow:
+	The inputs of the application will mainly come from API’s supplied by Google Play. A majority of the data will be through location services and Wi-Fi supplied by the operating system of the mobile device. Any other inputs will be supplied by the user. At this time, the only input needed from the user will be the use of the search bar. The inputs to the search bar will be ran against a list of known buildings on UK’s campus.
+Module Descriptions:
+MainModule
+{
+	// load all of the names of the buildings into memory
+	InitializeComponents();
+
+	// make API call to find the users location
+	GoogleAPICall();
+
+	// ping the user's location onto the map
+	PingUsersLocation();
+
+	// keep the location of the user up to date
+	KeepLocationUpdated();
+}
+
+SearchModule(String Value)
+{
+	bool Found = false;
+
+	Found = Search(KnownLocationsList);
+	
+	if (!Found)
+		NotifyUserFail();
+	else
+		NotifyUserSuccess();
+}
+Note: This is a high overview of what is to be done. Actual lines of code will be much more complex than given here.
+Design Considerations:
+	Any designs considered will be influenced by the suggestions of our testing group. Any other considerations will be made upon the experience of the developers and the limitations of the IDE and API’s supplied.
+User Scenarios:
+**Note: Some of these scenarios contain some features that may not be implemented
+1.	User wants to know their current location on campus:
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates may apply when using location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+2.	User wants to know where the “Slone” building is.
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates may apply when using location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+d.	The user taps the search bar. The keyboard will be displayed on the screen so that the user is able to type.
+e.	The user types in “Slone Building” into the search bar.
+f.	A pin is dropped onto the Slone Building and the view pans to the pin.
+
+3.	User wishes to the see the safe paths on campus.
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates apply when using location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+d.	UK Safe paths on campus are indicated by blue paw prints on the map.
+4.	User wants to see what a specific building does.
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates may apply when using the location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+d.	The user navigates around the map and finds the desired marked building.
+e.	The user then taps the building.
+f.	A dialogue is displayed giving information about the building tapped.
+5.	User wants to see a specific building’s hours of operation.
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates may apply when using the location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+d.	The user navigates around the map and finds the desired marked building.
+e.	The user then taps the building.
+f.	A dialogue is displayed giving the hours of operation of the tapped building.
+6.	User wants to park at K lot and doesn’t know where the lot is.
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates may apply when using the location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+d.	The user navigates around the map and finds the parking lot marked “K”.
+7.	**User is looking for something to eat nearby.
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates may apply when using location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+d.	The user taps the search bar. The keyboard will be displayed on the screen so that the user is able to type.
+e.	The user types in “food” into the search bar.
+f.	Pins are dropped on nearby food vendors.
+8.	**User wants to know how long it will take to walk to FPAT.
+a.	The user starts up the phone application.
+b.	A screen is displayed notifying the user that certain data rates may apply when using location services.
+c.	The user’s location is indicated by a ping on the map displayed.
+d.	The user types in “FPAT” into the search bar.
+e.	A pin is dropped on the FPAT building.
+f.	The user taps on the pin and options will be displayed.
+g.	A “Route me here” button will be displayed.
+h.	The user clicks the button and a route will be displayed between the user’s ping and the desired location.
+Sizing Estimate:
+**Note: These modules may or may not be implemented depending on time restraints.
+	The application will have approximately 2650 lines of code.  Each of the modules are broken down as follows
+	Main Module: 1200 Lines
+	Search Bar Module: 300 lines.
+	Routing Module: 700 lines.
+	Food Search: 450 lines.
