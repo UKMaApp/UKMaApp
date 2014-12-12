@@ -37,18 +37,31 @@ Steps to setup a new emulator if one has not been installed or an android device
 2.)	Given time, the AVD Manager will load. All created devices will be visible on the first tab, Android Virtual Devices. Name the AVD Device any name - Anything will do here. The other setting should be matched as below:
 
 AVD NAME:
+
 DEVICE: NEXUS 5 (4.0", 480x800 hdpi)
+
 TARGET: Google APIs (Google Inc.) - API Level 19
+
 CPU/ABI: - unable to change
+
 KEYBOARD: click the box for Hardware keyboard present
+
 SKIN: Skin with dynamic hardware controls
+
 FRONT CAMERA: None
+
 Back CAMERA: None
+
 MEMORY OPTIONS: RAM: 512 VM HEAP: 32
+
 INTERNAL STORAGE: 200 MB
+
 SD CARD: SIZE: 20 MB
+
 FILE - not clicked
+
 EMBEDDED OPTIONS: Snapbox and Use Host GPU both not checked
+
 
 3.)	Click OK.
 
