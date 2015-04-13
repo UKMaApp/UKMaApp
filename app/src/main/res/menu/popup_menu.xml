@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<item android:id="@+id/call"
+    android:title="Call"
+    />
+    <item android:id="@+id/website"
+        android:title="Visit Website"
+        />
+    <item android:id="@+id/navigate"
+        android:title="Navigate to"
+        />
+</menu>

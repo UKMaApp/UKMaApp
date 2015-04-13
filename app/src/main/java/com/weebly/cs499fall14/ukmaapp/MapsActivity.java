@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
@@ -33,6 +34,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 import android.widget.SearchView;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -78,6 +80,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         setUpMapIfNeeded();
         setUpMarkers();
 
+        //Set up listview to show results
         resultsView = new ResultsView();
 
         //ET = (EditText) findViewById(R.id.et_location);
@@ -129,23 +132,37 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
+        //Display the options menu
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu,menu);
+
+        //Get the SearchView object from the searchBar menu item
         searchView = (SearchView) menu.findItem(R.id.searchBar).getActionView();
+
+        //Set what happens when the searchBar item is pressed
         menu.findItem(R.id.searchBar).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                //Toggle visibility of listview
                 resultsView.toggle();
                 return false;
             }
         });
+
+        //Activity implements an OnQueryTextListener so we set it to this
+        //  Methods for OnQueryTextListener are
+        //      onQueryTextSubmit
+        //      onQueryTextChange
         searchView.setOnQueryTextListener(this);
 
+        //Call parent method and return
         return super.onCreateOptionsMenu(menu);
     }
 
+    //Set what happens when a search is submitted
     @Override
     public boolean onQueryTextSubmit(String query) {
+        //Update results with query
         resultsView.update(query);
         return false;
     }
@@ -156,8 +173,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         //search(newText.toLowerCase());
         //View shadow = findViewById(R.id.listViewShadowLeft);
         //shadow.setVisibility(View.VISIBLE);
+
+        //If results aren't shown, show them
         if(!resultsView.showing)
             resultsView.toggle();
+
+        //Update results with query
         resultsView.update(newText);
 
         return false;
@@ -560,6 +581,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     // A "Building" holds all of the information a building has. This information is linked to a
     // marker which is placed at the building's location.
+    //  Need to update this for phone numbers and new hours format
     public class Building {
         public String name = "error"; // White Hall Classroom Building
         public String code = "";      // CB
@@ -568,6 +590,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         public String url = "";       // www.whitehall.com
         public String type = "";      // buildings
         public String hours = "";     // ""
+        public String phone = "8592579000"; //Hardcoded for now, will be changed when csv is updated
 
         /* This constructor will fill the fields based on the incoming array "tokens" which
            represents a row from the table where each index is a column.
@@ -609,33 +632,45 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
+    //Handles searching and displaying results
     public class ResultsView
     {
-        public ListView listView;
-        public boolean showing;
-        public int maxHeight;
-
-
+        public ListView listView; //listView to populate/change
+        public boolean showing; //true if results are being shown
+        public int maxHeight; //Max height of listView in pixels
 
         ResultsView()
         {
+            //Get the listview
             listView = (ListView) findViewById(R.id.listView);
+            //Copy all layout parameters
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) listView.getLayoutParams();
+            //Starting height is max height + 5 so retrieve that from layout parameters
             maxHeight = params.height-5;
-
+            //Update listview with all locations
             update("");
+            //it is not showing initially
             showing = false;
+            //Set what happens when a location is clicked in the list view
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    //Get the name of the location that was clicked
                     String item = (String) listView.getItemAtPosition(position);
+                    //Iterate through all markers looking for matching name
+                    //Need to look into storing more info in each item such as index
+                    //  so we won't need to iterate through all markers
                     for(Marker m: mMarkerArray)
                     {
                         if(item.equals(mBuildingHash.get(m.getTitle()).name))
                         {
+                            //Collapse the search bar
                             searchView.onActionViewCollapsed();
+                            //Hide the listview
                             toggle();
+                            //Move map to selected location
                             mMap.animateCamera(CameraUpdateFactory.newLatLng(m.getPosition()));
+                            //Show window with location information
                             m.showInfoWindow();
                             break;
                         }
@@ -646,26 +681,39 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             });
         }
 
+        //Updates the listview with locations matching the query
+        //Need to update this to accept list of filters once theyre implemented
         public void update(String query)
         {
+            //Holds all matching results
             locationNames = new ArrayList<String>();
+            //Iterate through locations
             for (Marker m : mMarkerArray) {
                 String markerName = mBuildingHash.get(m.getTitle()).name; // retrieve current marker name
                 String markerCode = mBuildingHash.get(m.getTitle()).code; // retrieve current marker code
+                //If query is a substring of location name or location code
+                //  add location name to results
                 if(markerName.toLowerCase().contains(query.toLowerCase()) || markerCode.toLowerCase().contains(query.toLowerCase()) )
                     locationNames.add(markerName);
             }
+            //Update height of the listview to expand/contract
             updateHeight(locationNames.size());
             System.out.println(locationNames.size());
+            //Create an adapter to fill the listview
             adapter = new ArrayAdapter<String>(getApplicationContext(),
                     R.layout.listitem, R.id.name, locationNames);
+            //Assign the adapter to the listview
             listView.setAdapter(adapter);
         }
 
+        //Changes height of listview to accomodate number of results
         public void updateHeight(int entries)
         {
-            ScaleAnimation anim = new ScaleAnimation(1,1,1,0);
+            //ScaleAnimation anim = new ScaleAnimation(1,1,1,0);
+
+            //Calculate new height
             int newHeight = entries*maxHeight/5;
+            //If new height is greater than the max, set new height equal to max
             if(newHeight > maxHeight)
                 newHeight = maxHeight;
             //RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) findViewById(R.id.listViewLayout).getLayoutParams();
@@ -678,11 +726,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             //params.height = newHeight + shadowHeight;
             //findViewById(R.id.listViewShadowLayout).setLayoutParams(params);
 
+            //Get the layout parameters of the listview
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) listView.getLayoutParams();
+            //Set the height
             params.height = newHeight;
+            //Adding 5 pixels for drop shadow unless there aren't any results
             if(newHeight != 0)
                 params.height += 5;
+            //Update layout parameters
             listView.setLayoutParams(params);
+
             /*
             params = (LinearLayout.LayoutParams) findViewById(R.id.listViewShadowLeft).getLayoutParams();
             params.height = newHeight;
@@ -695,6 +748,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         }
 
+        //Toggles visibility of the list view
         public void toggle()
         {
             if(showing)
@@ -763,13 +817,53 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             @Override
             public void onInfoWindowClick(Marker marker) {
                 // Search hash by marker title (which is a name) then take the object's url
-                String url = mBuildingHash.get(marker.getTitle()).url;
+                Building tempBldg = mBuildingHash.get(marker.getTitle());
+                // Set intent strings for location
+                final String url = tempBldg.url;
+                final String phone = "tel:" + tempBldg.phone;
+                final String navigate = "google.navigation:q="+tempBldg.lat+","+tempBldg.lng;
 
+                //Create popup menu
+                // Need to work on positioning
+                PopupMenu popupMenu = new PopupMenu(MapsActivity.this, findViewById(R.id.popupAnchor));
+                popupMenu.getMenuInflater().inflate(R.menu.popup_menu,popupMenu.getMenu());
+
+                //Set what happens when an selection is made
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Intent newIntent;
+                        //If user selected call, website, or navigate
+                        //  set specific intent
+                        if(item.getItemId() == R.id.call)
+                        {
+                            newIntent = new Intent(Intent.ACTION_DIAL, Uri.parse(phone));
+                        }
+                        else if(item.getItemId() == R.id.website)
+                        {
+                            newIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        }
+                        else
+                        {
+                            newIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(navigate));
+                        }
+
+                        //Start the intent in a new activity
+                        startActivity(newIntent);
+                        return false;
+                    }
+                });
+
+                //Show the popup menu
+                popupMenu.show();
+
+                /*
                 if (url != null) {
                     // visit the url using the phone's browser
                     Intent openUrl = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(openUrl);
                 }
+                */
             }
         });
     }

@@ -112,6 +112,14 @@
                 android:visibility="invisible"></View>
         </LinearLayout>
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/popupAnchor"
+            android:visibility="invisible"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            />
     </RelativeLayout>
 
 </LinearLayout>
