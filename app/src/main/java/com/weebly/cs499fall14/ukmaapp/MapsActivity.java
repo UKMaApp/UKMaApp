@@ -13,11 +13,28 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.view.LayoutInflater;
+import android.view.animation.Animation;
+import android.view.MenuInflater;
+import android.view.animation.ScaleAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.view.View;
+import android.view.Menu;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.SearchView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -28,7 +45,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, LocationSource {
+public class MapsActivity extends FragmentActivity implements LocationListener, LocationSource, SearchView.OnQueryTextListener {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private LocationSource.OnLocationChangedListener mListener;
     private LocationManager locationManager;
@@ -46,15 +63,107 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final float INVISIBLE = 0.0f;
     private static final float VISIBLE = 1.0f;
     private boolean resetTilt = false;
-
+    private EditText ET;
+    private SearchView searchView;
+    private ResultsView resultsView;
+    //private ListView listView;
+    private ArrayAdapter<String> adapter;
+    private ArrayList<String> locationNames;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_maps);
 
         setUpMapIfNeeded();
         setUpMarkers();
+
+        resultsView = new ResultsView();
+
+        //ET = (EditText) findViewById(R.id.et_location);
+        //searchView = (SearchView) (item) findViewById(R.id.searchBar).getAc;
+        //searchView.setOnQueryTextListener(this);
+        /*
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                search(query.toLowerCase());
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                //search(newText.toLowerCase());
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+        */
+        /*
+        ET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //search();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        */
     }
+/*
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        setHasOptionsMenu(true);
+    }
+  */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu,menu);
+        searchView = (SearchView) menu.findItem(R.id.searchBar).getActionView();
+        menu.findItem(R.id.searchBar).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                resultsView.toggle();
+                return false;
+            }
+        });
+        searchView.setOnQueryTextListener(this);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        resultsView.update(query);
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+
+        //search(newText.toLowerCase());
+        //View shadow = findViewById(R.id.listViewShadowLeft);
+        //shadow.setVisibility(View.VISIBLE);
+        if(!resultsView.showing)
+            resultsView.toggle();
+        resultsView.update(newText);
+
+        return false;
+    }
+
+
 
     @Override
     public void onPause() {
@@ -121,6 +230,157 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         };
     }
 
+    // Search button listener. When the search button is clicked this is called. If there is
+    // text in the search box it will be searched for and the found building will be centered on.
+    public void search(String location) {
+        // Close keyboard
+        InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+
+        // Getting user input location
+        Marker closestMarker = null;
+
+        if (location.equals("help")) {
+            Toast.makeText(this, "Special searches: help, all, food, buildings, parking, and reset", Toast.LENGTH_LONG).show();
+        } else if (location.equals("all")) {
+            // if "all" is searched the transparency of all markers is toggled
+            float toggle = VISIBLE;
+            if (mMarkerArray.get(0).getAlpha() != INVISIBLE) {
+                toggle = INVISIBLE;
+            }
+            for (Marker m : mMarkerArray) {
+                m.setAlpha(toggle); // toggle transparency of all markers
+            }
+        } else if (location.equals("reset")) {
+            // if "reset" is searched center map to default
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(DEFAULT_LAT, DEFAULT_LNG))
+                    .zoom(DEFAULT_ZOOM)
+                    .tilt(DEFAULT_TILT)
+                    .build();
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        } else if (location.equals("buildings") || location.equals("food") || location.equals("parking")) {
+            // This will make all buildings that match the filter visible and it will zoom to
+            // a level that has every building on screen. For this we need to calculate the
+            // southwest and northeast corners.
+            // ((SW_lat, SW_lng), (NE_lat, NE_lng)) == ((minLat, minLng), (maxLat, maxLng))
+            double maxLat = BOTTOM_LAT_BOUND;
+            double maxLng = RIGHT_LNG_BOUND;
+            double minLat = TOP_LAT_BOUND;
+            double minLng = LEFT_LNG_BOUND;
+
+            for (Marker m : mMarkerArray) {
+                Building bldg = mBuildingHash.get(m.getTitle());
+                if (location.equals("parking")) {
+                    if (!bldg.type.equals("buildings") && !bldg.type.equals("food")) {
+                        m.setAlpha(VISIBLE);
+                        if (bldg.lat > maxLat) {
+                            maxLat = bldg.lat; }
+                        if (bldg.lat < minLat) {
+                            minLat = bldg.lat; }
+                        if (bldg.lng > maxLng) {
+                            minLng = bldg.lng; }
+                        if (bldg.lng < minLng) {
+                            minLng = bldg.lng; }
+                    } else {
+                        m.setAlpha(INVISIBLE);
+                    }
+                } else {
+                    if (bldg.type.equals(location)) {
+                        m.setAlpha(VISIBLE);
+                        if (bldg.lat > maxLat) {
+                            maxLat = bldg.lat; }
+                        if (bldg.lat < minLat) {
+                            minLat = bldg.lat; }
+                        if (bldg.lng > maxLng) {
+                            minLng = bldg.lng; }
+                        if (bldg.lng < minLng) {
+                            minLng = bldg.lng; }
+                    } else {
+                        m.setAlpha(INVISIBLE);
+                    }
+                }
+            }
+            LatLngBounds bounds = new LatLngBounds(new LatLng(minLat, minLng), new LatLng(maxLat, maxLng));
+            resetTilt = true;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 10));
+        } else if (!location.equals("")) {
+            // Initial closest is 1000 since that is huge and all other "distances" will be closer.
+            int closestStrDistance = HUGE_STR_DIST;
+
+            for (Marker m : mMarkerArray) {
+                m.setAlpha(INVISIBLE); // make all markers transparent
+            }
+
+            // NOTE: This whole area may seem confusing. Sorry, it's effective for searching.
+
+            // Loop through all markers. For each marker several comparisons are done to find
+            // the closest string match.
+            // 1. An exact match check is done and if it is found the rest of the markers
+            //    are skipped over.
+            // 2. Then a check against the building code (e.g. RGAN)
+            // 3. Then a check against the entire building name (e.g. Ralph G. Anderson Building)
+            // 4. Then a check against each word in the building name. This is done so a search
+            //    for "physics" when compared to the words {"chemistry", "physics", "building"}
+            //    will match correctly
+            // 5. Then a check against just a substring of the entire building name equal to
+            //    the length of the searched text (e.g. compare "ralph" to "ralph" of full name
+            //    "ralph g. anderson")
+            for (Marker m : mMarkerArray) {
+                String markerName = mBuildingHash.get(m.getTitle()).name; // retrieve current marker name
+                if(markerName.toLowerCase().contains(location.toLowerCase()))
+                    closestMarker = m;
+                /*
+                // If exact name match we can stop searching the rest of the markers
+                if (location.equals(markerName.toLowerCase())) {
+                    closestMarker = m;
+                    break;
+                }
+
+                // Check building code like "RGAN"
+                int thisStrDistance = levenshteinDistance(location, mBuildingHash.get(markerName).code);
+                if (thisStrDistance < closestStrDistance) { // if this is a closer match than current closest then...
+                    closestStrDistance = thisStrDistance; // it is now the closest match
+                    closestMarker = m;
+                }
+
+                // Check entire name like "Ralph G. Anderson Building"
+                thisStrDistance = levenshteinDistance(location, mBuildingHash.get(markerName).name);
+                if (thisStrDistance < closestStrDistance) { // if this is a closer match than current closest
+                    closestStrDistance = thisStrDistance; // it is now the closest match
+                    closestMarker = m;
+                }
+
+                // Split each building name by spaces
+                // Compare "physics" to {"chemistry", "physics", "building"}
+                String[] bldgSplitArray = mBuildingHash.get(markerName).name.split(" |-");
+                for (String bldgWord : bldgSplitArray) { // check each word
+                    thisStrDistance = levenshteinDistance(location, bldgWord);
+                    if (thisStrDistance < closestStrDistance) {
+                        closestStrDistance = thisStrDistance;
+                        closestMarker = m;
+                    }
+                }
+
+                // Substring because you want to compare "Chem" to "Chem" instead of
+                //   "Chem" to "Chemistry" or "Chemistry Physics Building"
+                String subMarkerName = markerName.substring(0, Math.min(markerName.length(), location.length()));
+                thisStrDistance = levenshteinDistance(location, subMarkerName);
+                if (thisStrDistance < closestStrDistance) {
+                    closestStrDistance = thisStrDistance;
+                    closestMarker = m;
+                }
+                */
+            }
+        }
+        if (closestMarker != null) {
+            // center on the closest matching marker and show its info window
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(closestMarker.getPosition()));
+            closestMarker.showInfoWindow();
+        }
+    }
+/*
     // Search button listener. When the search button is clicked this is called. If there is
     // text in the search box it will be searched for and the found building will be centered on.
     public void searchListener(View view) {
@@ -223,7 +483,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             //    "ralph g. anderson")
             for (Marker m : mMarkerArray) {
                 String markerName = mBuildingHash.get(m.getTitle()).name; // retrieve current marker name
-
+                if(markerName.toLowerCase().contains(location.toLowerCase()))
+                    closestMarker = m;
+                /*
                 // If exact name match we can stop searching the rest of the markers
                 if (location.equals(markerName.toLowerCase())) {
                     closestMarker = m;
@@ -263,6 +525,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     closestStrDistance = thisStrDistance;
                     closestMarker = m;
                 }
+
             }
         }
         if (closestMarker != null) {
@@ -271,7 +534,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             closestMarker.showInfoWindow();
         }
     }
-
+*/
     // Algorithm implementation from http://rosettacode.org/wiki/Levenshtein_distance#Java
     // It finds the Levenshtein distance between two string (an int) and returns it
     public static int levenshteinDistance(String a, String b) {
@@ -344,6 +607,109 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 mBuildingHash.put(name, this);
             }
         }
+    }
+
+    public class ResultsView
+    {
+        public ListView listView;
+        public boolean showing;
+        public int maxHeight;
+
+
+
+        ResultsView()
+        {
+            listView = (ListView) findViewById(R.id.listView);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) listView.getLayoutParams();
+            maxHeight = params.height-5;
+
+            update("");
+            showing = false;
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String item = (String) listView.getItemAtPosition(position);
+                    for(Marker m: mMarkerArray)
+                    {
+                        if(item.equals(mBuildingHash.get(m.getTitle()).name))
+                        {
+                            searchView.onActionViewCollapsed();
+                            toggle();
+                            mMap.animateCamera(CameraUpdateFactory.newLatLng(m.getPosition()));
+                            m.showInfoWindow();
+                            break;
+                        }
+                    }
+
+                    System.out.println(item);
+                }
+            });
+        }
+
+        public void update(String query)
+        {
+            locationNames = new ArrayList<String>();
+            for (Marker m : mMarkerArray) {
+                String markerName = mBuildingHash.get(m.getTitle()).name; // retrieve current marker name
+                String markerCode = mBuildingHash.get(m.getTitle()).code; // retrieve current marker code
+                if(markerName.toLowerCase().contains(query.toLowerCase()) || markerCode.toLowerCase().contains(query.toLowerCase()) )
+                    locationNames.add(markerName);
+            }
+            updateHeight(locationNames.size());
+            System.out.println(locationNames.size());
+            adapter = new ArrayAdapter<String>(getApplicationContext(),
+                    R.layout.listitem, R.id.name, locationNames);
+            listView.setAdapter(adapter);
+        }
+
+        public void updateHeight(int entries)
+        {
+            ScaleAnimation anim = new ScaleAnimation(1,1,1,0);
+            int newHeight = entries*maxHeight/5;
+            if(newHeight > maxHeight)
+                newHeight = maxHeight;
+            //RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) findViewById(R.id.listViewLayout).getLayoutParams();
+            //params.height = newHeight+5;
+            //findViewById(R.id.listViewLayout).setLayoutParams(params);
+
+            //if(newHeight == 0)
+            //    findViewById(R.id.listViewShadowBottom).startAnimation(anim);
+            //params = (RelativeLayout.LayoutParams) (findViewById(R.id.listViewShadowLayout)).getLayoutParams();
+            //params.height = newHeight + shadowHeight;
+            //findViewById(R.id.listViewShadowLayout).setLayoutParams(params);
+
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) listView.getLayoutParams();
+            params.height = newHeight;
+            if(newHeight != 0)
+                params.height += 5;
+            listView.setLayoutParams(params);
+            /*
+            params = (LinearLayout.LayoutParams) findViewById(R.id.listViewShadowLeft).getLayoutParams();
+            params.height = newHeight;
+            findViewById(R.id.listViewShadowLeft).setLayoutParams(params);
+            params = (LinearLayout.LayoutParams) findViewById(R.id.listViewShadowRight).getLayoutParams();
+            params.height = newHeight;
+
+            findViewById(R.id.listViewShadowRight).setLayoutParams(params);
+            */
+
+        }
+
+        public void toggle()
+        {
+            if(showing)
+            {
+                showing = false;
+                listView.setVisibility(View.GONE);
+            }
+            else
+            {
+                showing = true;
+                listView.setVisibility(View.VISIBLE);
+            }
+
+        }
+
     }
 
     // This parses the Buildings.csv file and populates the map with markers for buildings.
